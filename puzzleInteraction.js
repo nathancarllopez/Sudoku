@@ -26,11 +26,7 @@ function createPuzzle() {
                 subCell.addEventListener('mouseleave', subCellDefault);
 
                 /** Add click effect */
-                subCell.addEventListener('click', () => {
-                    subCell.removeEventListener('mouseenter', subCellFill);
-                    subCell.removeEventListener('mouseleave', subCellDefault);
-                    subCell.setAttribute('id', 'filled-sub-cell');
-                });
+                subCell.addEventListener('click', clickSubCell);
 
                 /** Add each sub-cell to its cell */
                 cell.appendChild(subCell);
@@ -49,7 +45,7 @@ function createPuzzle() {
 
 function subCellFill(event) {
     const subCell = event.target;
-    subCell.setAttribute('id', 'filled-sub-cell');
+    subCell.setAttribute('id', 'selected-sub-cell');
 }
 
 function subCellDefault(event) {
@@ -57,6 +53,35 @@ function subCellDefault(event) {
     subCell.setAttribute('id', 'sub-cell');
 }
 
-function clickSubCell(subCell) {
+function clickSubCell(event) {
+    const subCell = event.target;
+    const shiftPressed = event.shiftKey;
+    if (shiftPressed) {
+        shiftClick(subCell);
+    } else {
+        standardClick(subCell);
+    }
+}
 
+function standardClick(subCell) {
+    const subCellId = subCell.getAttribute('id');
+    if (subCellId == 'selected-sub-cell') {
+        subCell.removeEventListener('mouseenter', subCellFill);
+        subCell.removeEventListener('mouseleave', subCellDefault);
+        subCell.setAttribute('id', 'filled-sub-cell');
+    } else if (subCellId == 'filled-sub-cell') {
+        subCell.setAttribute('id', 'sub-cell');
+        subCell.addEventListener('mouseenter', subCellFill);
+        subCell.addEventListener('mouseleave', subCellDefault);
+    }
+}
+
+function shiftClick(subCell) {
+    const cell = subCell.parentNode;
+    const selectedNumber = subCell.textContent;
+    /** Remove all sub-cells */
+    cell.childNodes.forEach(child => cell.removeChild(child));
+    /** Change text content of cell to selectedNumber */
+    cell.setAttribute('id', 'filled-cell');
+    cell.textContent = selectedNumber;
 }

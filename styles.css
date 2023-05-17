@@ -1,13 +1,18 @@
 #sub-cell {
-    border: 1px solid black;
     height: 20px;
     width: 20px;
-    color: lightgray;
+    color: white;
+    text-align: center;
+}
+
+#selected-sub-cell {
+    height: 20px;
+    width: 20px;
+    color: red;
     text-align: center;
 }
 
 #filled-sub-cell {
-    border: 1px solid black;
     height: 20px;
     width: 20px;
     color: black;
@@ -20,6 +25,14 @@
     border: 1px solid black;
     height: 66px;
     width: 60px;
+}
+
+#filled-cell {
+    border: 1px solid black;
+    height: 66px;
+    width: 60px;
+    text-align: center;
+    font-size: xxx-large;
 }
 
 #block {
