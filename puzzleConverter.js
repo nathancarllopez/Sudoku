@@ -1,4 +1,4 @@
-/** Here is where the logic to solve a puzzle will be stored */
+/** Here is where puzzles are converted from row-style to block-style */
 
 
 const TEST_PUZZLE_BLOCKS = {
@@ -27,6 +27,7 @@ const TEST_PUZZLE_ROWS = {
 
 /** Converts a puzzle object from rows to blocks */
 function convertRowsToBlocks(puzzle) {
+    /** Puzzle to be returned */
     const convertedPuzzle = {
         block0: [],
         block1: [],
@@ -38,15 +39,23 @@ function convertRowsToBlocks(puzzle) {
         block7: [],
         block8: [],
     }
+
+    /** Iterate through the rows to extract blocks */
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
-            const row = puzzle[`row${3*i+j}`];
+            const rowNum = 3*i + j;
+            const row = puzzle[`row${rowNum}`];
             for (let k = 0; k < 3; k++) {
+                const blockNum = 3*i + k;
+                const block = convertedPuzzle[`block${blockNum}`];
                 for (let l = 0; l < 3; l++) {
-                    const value = row[3*k + l];
-                    console.log(value);
+                    const rowIndex = 3*k + l;
+                    const rowValue = row[rowIndex];
+                    block.push(rowValue);
                 }
             }
         }
     }
+
+    return convertedPuzzle;
 }
