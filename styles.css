@@ -1,0 +1,51 @@
+#sub-cell {
+    border: 1px solid black;
+    height: 20px;
+    width: 20px;
+    color: lightgray;
+    text-align: center;
+}
+
+#filled-sub-cell {
+    border: 1px solid black;
+    height: 20px;
+    width: 20px;
+    color: black;
+    text-align: center;
+}
+
+#cell {
+    display: grid;
+    grid-template-columns: repeat(3, 20px);
+    border: 1px solid black;
+    height: 66px;
+    width: 60px;
+}
+
+#block {
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    border: 1px solid black;
+    height: 204px;
+    width: 180px;
+}
+
+#puzzle {
+    display: grid;
+    grid-template-columns: repeat(3, 180px);
+}
+
+
+
+
+
+
+
+/*
+
+
+
+#filled-cell {
+    The cell when a number is committed via shift+click
+}
+ */
