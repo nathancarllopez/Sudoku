@@ -46,6 +46,8 @@
 #puzzle {
     display: grid;
     grid-template-columns: repeat(3, 180px);
+    border: 1px solid black;
+    width: 540px;
 }
 
 

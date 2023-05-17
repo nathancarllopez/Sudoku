@@ -79,9 +79,7 @@ function standardClick(subCell) {
 function shiftClick(subCell) {
     const cell = subCell.parentNode;
     const selectedNumber = subCell.textContent;
-    /** Remove all sub-cells */
     cell.childNodes.forEach(child => cell.removeChild(child));
-    /** Change text content of cell to selectedNumber */
     cell.setAttribute('id', 'filled-cell');
     cell.textContent = selectedNumber;
 }
