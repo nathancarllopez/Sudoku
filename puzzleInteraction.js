@@ -22,8 +22,15 @@ function createPuzzle() {
                 subCell.textContent = `${k+1}`;
 
                 /** Add hover effect */
-                subCell.addEventListener('mouseenter', e => e.target.setAttribute('id', 'filled-sub-cell'));
-                subCell.addEventListener('mouseleave', e => e.target.setAttribute('id', 'sub-cell'));
+                subCell.addEventListener('mouseenter', subCellFill);
+                subCell.addEventListener('mouseleave', subCellDefault);
+
+                /** Add click effect */
+                subCell.addEventListener('click', () => {
+                    subCell.removeEventListener('mouseenter', subCellFill);
+                    subCell.removeEventListener('mouseleave', subCellDefault);
+                    subCell.setAttribute('id', 'filled-sub-cell');
+                });
 
                 /** Add each sub-cell to its cell */
                 cell.appendChild(subCell);
@@ -36,4 +43,20 @@ function createPuzzle() {
         /** Add each block to puzzle */
         puzzle.appendChild(block);
     }
+}
+
+/** Event listener functions */
+
+function subCellFill(event) {
+    const subCell = event.target;
+    subCell.setAttribute('id', 'filled-sub-cell');
+}
+
+function subCellDefault(event) {
+    const subCell = event.target;
+    subCell.setAttribute('id', 'sub-cell');
+}
+
+function clickSubCell(subCell) {
+
 }
