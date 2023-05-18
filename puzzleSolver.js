@@ -59,7 +59,7 @@ function getOptions(puzzle) {
     emptyCells.forEach(cell => {
         const rowNum = cell[0];
         const colNum = cell[1];
-        rowNum in options ? options.rowNum.colNum = [] : options.rowNum = {colNum: []};
+        rowNum in options ? options[rowNum][colNum] = [] : options[rowNum] = {[colNum]: []};
     });
 
     /** Fill dictionary */
@@ -89,7 +89,7 @@ function getOptions(puzzle) {
         }
         /** Add value to options at all empty cells that have not been eliminated */
         emptyCells.forEach(cell => {
-            if (!eliminatedEmptyCells.includes(cell)) options.rowNum.colNum.push(value);
+            if (!eliminatedEmptyCells.includes(cell)) options[rowNum][colNum].push(value);
         });
     }
     return options;
