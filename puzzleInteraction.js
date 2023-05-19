@@ -3,8 +3,7 @@
 /** The div that contains the whole puzzle */
 const puzzleContainer = document.querySelector('#puzzle-container');
 
-/** A test puzzle to work with */
-const TEST_PUZZLE = {
+const TEST_PUZZLE_BLOCKS = {
     block0: [8, 0, 0, 0, 0, 0, 2, 7, 1],
     block1: [0, 5, 1, 0, 0, 0, 8, 9, 3],
     block2: [7, 9, 0, 2, 0, 0, 4, 0, 0],
@@ -16,7 +15,6 @@ const TEST_PUZZLE = {
     block8: [1, 7, 0, 3, 4, 8, 9, 0, 6],
 }
 
-/** There are 9 blocks in the whole puzzle, and each block contains 9 cells */
 function displayPuzzle(puzzle) {
     for (let i = 0; i < 9; i++) {
         /** Create 9 blocks */
@@ -52,6 +50,8 @@ function displayPuzzle(puzzle) {
                 /** Cell is filled already */
                 cell.setAttribute('id', 'filled-cell');
                 cell.textContent = puzzleValue;
+                cell.setAttribute('class', `value-${puzzleValue}`);
+                cell.addEventListener('click', cellClick);
             }
             
 
@@ -67,42 +67,103 @@ function displayPuzzle(puzzle) {
 /** Event listener functions */
 
 function subCellFill(event) {
+    /** Target subCell */
     const subCell = event.target;
+
+    /** Change color to red */
     subCell.setAttribute('id', 'selected-sub-cell');
 }
 
 function subCellDefault(event) {
+    /** Target subcell */
     const subCell = event.target;
+
+    /** Change color to black */
     subCell.setAttribute('id', 'sub-cell');
 }
 
 function clickSubCell(event) {
+    /** Target subcell */
     const subCell = event.target;
+
+    /** Check if shift is pressed */
     const shiftPressed = event.shiftKey;
     if (shiftPressed) {
-        shiftClick(subCell);
+        subCellShiftClick(subCell);
     } else {
-        standardClick(subCell);
+        subCellClick(subCell);
     }
 }
 
-function standardClick(subCell) {
+function subCellClick(subCell) {
+    /** Retrieve subcell id and subcell value */
     const subCellId = subCell.getAttribute('id');
+    const subCellValue = subCell.textContent;
+
+    /** Retrieve parent cell of subcell */
+    const cell = subCell.parentNode;
+
+    /** Check sub cell id to determine control flow */
     if (subCellId == 'selected-sub-cell') {
+        /** Remove hover event listeners */
         subCell.removeEventListener('mouseenter', subCellFill);
         subCell.removeEventListener('mouseleave', subCellDefault);
+
+        /** Change color of subcell */
         subCell.setAttribute('id', 'filled-sub-cell');
+
+        /** Add class to parent cell */
+        cell.setAttribute('class', `value-${subCellValue}`);
     } else if (subCellId == 'filled-sub-cell') {
+        /** Remove class from parent cell */
+        cell.removeAttribute('class');
+
+        /** Change color of subcell */
         subCell.setAttribute('id', 'sub-cell');
+
+        /** Add hover event listeners */
         subCell.addEventListener('mouseenter', subCellFill);
         subCell.addEventListener('mouseleave', subCellDefault);
     }
 }
 
-function shiftClick(subCell) {
+function subCellShiftClick(subCell) {
+    /** Target parent cell of subcell and retrieve subcell value */
     const cell = subCell.parentNode;
-    const selectedNumber = subCell.textContent;
+    const subCellValue = subCell.textContent;
+
+    /** Remove all other subcells of parent subcell */
     cell.childNodes.forEach(child => cell.removeChild(child));
+
+    /** Change attributes of cell, its content, and add a click event */
     cell.setAttribute('id', 'filled-cell');
-    cell.textContent = selectedNumber;
+    cell.setAttribute('class', `value-${subCellValue}`);
+    cell.textContent = subCellValue;
+    cell.addEventListener('click', cellClick);
+}
+
+function cellClick(event) {
+    /** rgb color values for reference */
+    const white = 'rgb(255, 255, 255)';
+
+    /** Target cell */
+    const cell = event.target;
+
+    /** Retrieve cell value and background color */
+    const cellValue = cell.getAttribute('class');
+    const cellBackgroundColor = getComputedStyle(cell).backgroundColor;
+
+    /** Remove highlighting from all cells */
+    const allCells = document.querySelectorAll('#cell');
+    allCells.forEach(cell => cell.setAttribute('style', 'background-color: white'));
+    const allFilledCells = document.querySelectorAll('#filled-cell');
+    allFilledCells.forEach(cell => cell.setAttribute('style', 'background-color: white'));
+
+    /** Determine background color to direct control flow */
+    if (cellBackgroundColor == white) {
+        /** Add highlighting to clicked cell and all cells with the same value */
+        cell.setAttribute('style', 'background-color: lightblue');
+        const sameValueCells = document.querySelectorAll(`.${cellValue}`);
+        sameValueCells.forEach(cell => cell.setAttribute('style', 'background-color: lightblue'));
+    }
 }
