@@ -113,10 +113,12 @@ function subCellClick(subCell) {
         subCell.setAttribute('id', 'filled-sub-cell');
 
         /** Add class to parent cell */
-        cell.setAttribute('class', `value-${subCellValue}`);
+        // cell.setAttribute('class', `value-${subCellValue}`);
+        cell.classList.add(`value-${subCellValue}`);
+        
     } else if (subCellId == 'filled-sub-cell') {
         /** Remove class from parent cell */
-        cell.removeAttribute('class');
+        cell.classList.remove(`value-${subCellValue}`);
 
         /** Change color of subcell */
         subCell.setAttribute('id', 'sub-cell');
