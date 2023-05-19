@@ -111,3 +111,23 @@ function getOptions(puzzle) {
     }
     return options;
 }
+
+function getSingleValueCells(puzzle) {
+    /** Generate the options for the empty cells */
+    const options = getOptions(puzzle);
+    console.log("options", options)
+
+    /** Look through options to find cells that only have a single value */
+    const singleValueCells = {};
+    for (rowNum in options) {
+        for (colNum in options[rowNum]) {
+            const valueArray = options[rowNum][colNum];
+            if (valueArray.length == 1) {
+                const value = valueArray[0];
+                // singleValueCells[rowNum] = {[colNum]: value};
+                rowNum in singleValueCells ? singleValueCells[rowNum][colNum] = value : singleValueCells[rowNum] = {[colNum]: value};
+            }
+        }
+    }
+    return singleValueCells;
+}
