@@ -13,7 +13,7 @@
  * whereas a value of 0 designates an empty cell.
  * */
 
-const TEST_PUZZLE = {
+const TEST_PUZZLE_ROWS = {
     row0: [8, 0, 0, 0, 5, 1, 7, 9, 0],
     row1: [0, 0, 0, 0, 0, 0, 2, 0, 0],
     row2: [2, 7, 1, 8, 9, 3, 4, 0, 0],
@@ -64,32 +64,49 @@ function getOptions(puzzle) {
 
     /** Fill dictionary */
     for (let value of [1,2,3,4,5,6,7,8,9]) {
-        const eliminatedEmptyCells = new Set();
+        const eliminatedEmptyCells = [];
         for (let [valueRowNum, valueColNum] of getCellsWithValue(puzzle, value)) {
             /** Eliminate empties from row valueRowNum */
             for (let colNum = 0; colNum < 9; colNum++) {
                 const cellValue = puzzle[`row${valueRowNum}`][colNum];
-                if (!cellValue) eliminatedEmptyCells.add([valueRowNum, colNum]);
+                if (!cellValue) {
+                    if (!eliminatedEmptyCells.find(cell => cell[0] == valueRowNum && cell[1] == colNum)) {
+                        eliminatedEmptyCells.push([valueRowNum, colNum]);
+                    }
+                }
             }
             /** Eliminate empties from col valueColNum */
             for (let rowNum = 0; rowNum < 9; rowNum++) {
                 const cellValue = puzzle[`row${rowNum}`][valueColNum];
-                if (!cellValue) eliminatedEmptyCells.add([rowNum, valueColNum]);
+                if (!cellValue) {
+                    if (!eliminatedEmptyCells.find(cell => cell[0] == rowNum && cell[1] == valueColNum)) {
+                        eliminatedEmptyCells.push([rowNum, valueColNum]);
+                    }
+                }
             }
             /** Eliminate empties from the block containing the cell valueRowNum, valueColNum */
             for (let blockNum = 0; blockNum < 9; blockNum++) {
                 const block = ALL_BLOCKS[`block${blockNum}`]
-                if (block.includes([valueRowNum, valueColNum])) {
+                if (block.find(cell => cell[0] == valueRowNum && cell[1] == valueColNum)) {
                     for (let [rowNum, colNum] of block) {
                         const cellValue = puzzle[`row${rowNum}`][colNum];
-                        if (!cellValue) eliminatedEmptyCells.add([rowNum, colNum]);
+                        if (!cellValue) {
+                            if (!eliminatedEmptyCells.find(cell => cell[0] == rowNum && cell[1] == colNum)) {
+                                eliminatedEmptyCells.push([rowNum, colNum]);
+                            }
+                        }
                     }
+                    break;
                 }
             }
         }
         /** Add value to options at all empty cells that have not been eliminated */
-        emptyCells.forEach(cell => {
-            if (!eliminatedEmptyCells.includes(cell)) options[rowNum][colNum].push(value);
+        emptyCells.forEach(emptyCell => { // For each empty cell
+            for (index = 0; index < eliminatedEmptyCells.length; index++) { // Look through the
+                const eliminatedCell = eliminatedEmptyCells[index];         // eliminated cells
+                if (eliminatedCell[0] == emptyCell[0] && eliminatedCell[1] == emptyCell[1]) break; // If you find a match, move onto the next empty cell
+                if (index == eliminatedEmptyCells.length - 1) options[emptyCell[0]][emptyCell[1]].push(value); // If you didn't find a match, add value to options
+            }
         });
     }
     return options;
