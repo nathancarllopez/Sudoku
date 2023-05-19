@@ -14,15 +14,15 @@
  * */
 
 const TEST_PUZZLE_ROWS = {
-    row0: [8, 0, 0, 0, 5, 1, 7, 9, 0],
-    row1: [0, 0, 0, 0, 0, 0, 2, 0, 0],
-    row2: [2, 7, 1, 8, 9, 3, 4, 0, 0],
-    row3: [0, 6, 8, 7, 1, 2, 5, 0, 0],
-    row4: [4, 5, 0, 6, 3, 9, 0, 0, 7],
-    row5: [0, 1, 3, 0, 0, 4, 6, 2, 0],
-    row6: [3, 8, 0, 0, 0, 5, 1, 7, 0],
-    row7: [6, 9, 5, 1, 2, 0, 3, 4, 8],
-    row8: [0, 2, 0, 3, 4, 0, 9, 0, 6],
+    0: [8, 0, 0, 0, 5, 1, 7, 9, 0],
+    1: [0, 0, 0, 0, 0, 0, 2, 0, 0],
+    2: [2, 7, 1, 8, 9, 3, 4, 0, 0],
+    3: [0, 6, 8, 7, 1, 2, 5, 0, 0],
+    4: [4, 5, 0, 6, 3, 9, 0, 0, 7],
+    5: [0, 1, 3, 0, 0, 4, 6, 2, 0],
+    6: [3, 8, 0, 0, 0, 5, 1, 7, 0],
+    7: [6, 9, 5, 1, 2, 0, 3, 4, 8],
+    8: [0, 2, 0, 3, 4, 0, 9, 0, 6],
 }
 
 const ALL_BLOCKS = {
@@ -40,7 +40,7 @@ const ALL_BLOCKS = {
 function getCellsWithValue(puzzle, value) {
     const cellsWithValue = [];
     for (let rowNum = 0; rowNum < 9; rowNum++) {
-        const row = puzzle[`row${rowNum}`];
+        const row = puzzle[rowNum];
         for (let colNum = 0; colNum < 9; colNum++) {
             if (row[colNum] == value) cellsWithValue.push([rowNum, colNum]);
         }
@@ -68,7 +68,7 @@ function getOptions(puzzle) {
         for (let [valueRowNum, valueColNum] of getCellsWithValue(puzzle, value)) {
             /** Eliminate empties from row valueRowNum */
             for (let colNum = 0; colNum < 9; colNum++) {
-                const cellValue = puzzle[`row${valueRowNum}`][colNum];
+                const cellValue = puzzle[valueRowNum][colNum];
                 if (!cellValue) {
                     if (!eliminatedEmptyCells.find(cell => cell[0] == valueRowNum && cell[1] == colNum)) {
                         eliminatedEmptyCells.push([valueRowNum, colNum]);
@@ -77,7 +77,7 @@ function getOptions(puzzle) {
             }
             /** Eliminate empties from col valueColNum */
             for (let rowNum = 0; rowNum < 9; rowNum++) {
-                const cellValue = puzzle[`row${rowNum}`][valueColNum];
+                const cellValue = puzzle[rowNum][valueColNum];
                 if (!cellValue) {
                     if (!eliminatedEmptyCells.find(cell => cell[0] == rowNum && cell[1] == valueColNum)) {
                         eliminatedEmptyCells.push([rowNum, valueColNum]);
@@ -89,7 +89,7 @@ function getOptions(puzzle) {
                 const block = ALL_BLOCKS[`block${blockNum}`]
                 if (block.find(cell => cell[0] == valueRowNum && cell[1] == valueColNum)) {
                     for (let [rowNum, colNum] of block) {
-                        const cellValue = puzzle[`row${rowNum}`][colNum];
+                        const cellValue = puzzle[rowNum][colNum];
                         if (!cellValue) {
                             if (!eliminatedEmptyCells.find(cell => cell[0] == rowNum && cell[1] == colNum)) {
                                 eliminatedEmptyCells.push([rowNum, colNum]);
@@ -112,10 +112,9 @@ function getOptions(puzzle) {
     return options;
 }
 
-function getSingleValueCells(puzzle) {
-    /** Generate the options for the empty cells */
-    const options = getOptions(puzzle);
-    console.log("options", options)
+function getSingleValueCells(options) {
+    // /** Generate the options for the empty cells */
+    // const options = getOptions(puzzle);
 
     /** Look through options to find cells that only have a single value */
     const singleValueCells = {};
@@ -124,10 +123,35 @@ function getSingleValueCells(puzzle) {
             const valueArray = options[rowNum][colNum];
             if (valueArray.length == 1) {
                 const value = valueArray[0];
-                // singleValueCells[rowNum] = {[colNum]: value};
                 rowNum in singleValueCells ? singleValueCells[rowNum][colNum] = value : singleValueCells[rowNum] = {[colNum]: value};
             }
         }
     }
     return singleValueCells;
+}
+
+function getLonelyValueCells(options) {
+    /** Generate the options for the empty cells */
+}
+
+function fillCellAndUpdateOptions(puzzle, rowNum, colNum, value, options) {
+    /** Set cell value in puzzle */
+    puzzle[rowNum]
+
+    /** Update options */
+        /**  */
+}
+
+function fillSvAndLvCells(puzzle) {
+    /** Generate the options for the empty cells */
+    let options = getOptions(puzzle);
+
+    /** Fill the single value cells */
+    let singleValueCells = getSingleValueCells(options);
+    for (rowNum in singleValueCells) {
+        for (colNum in singleValueCells[rowNum]) {
+            const value = singleValueCells[rowNum][colNum];
+            fillCellAndUpdateOptions(puzzle, rowNum, colNum, value, options);
+        }
+    }
 }
