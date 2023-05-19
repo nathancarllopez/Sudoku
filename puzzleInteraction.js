@@ -140,6 +140,9 @@ function subCellShiftClick(subCell) {
     cell.setAttribute('class', `value-${subCellValue}`);
     cell.textContent = subCellValue;
     cell.addEventListener('click', cellClick);
+
+    /** Remove pencil marks from adjacent cells */
+    
 }
 
 function cellClick(event) {
@@ -167,3 +170,4 @@ function cellClick(event) {
         sameValueCells.forEach(cell => cell.setAttribute('style', 'background-color: lightblue'));
     }
 }
+
