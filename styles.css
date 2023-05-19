@@ -1,7 +1,7 @@
 #sub-cell {
     height: 20px;
     width: 20px;
-    color: white;
+    color: transparent;
     text-align: center;
 }
 
@@ -25,7 +25,17 @@
     border: 1px solid black;
     height: 66px;
     width: 60px;
+    background-color: white;
 }
+
+/* #selected-cell {
+    border: 1px solid black;
+    height: 66px;
+    width: 60px;
+    text-align: center;
+    font-size: xxx-large;
+    background-color: lightblue;
+} */
 
 #filled-cell {
     border: 1px solid black;
@@ -33,6 +43,7 @@
     width: 60px;
     text-align: center;
     font-size: xxx-large;
+    background-color: white;
 }
 
 #block {
