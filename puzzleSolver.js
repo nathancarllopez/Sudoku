@@ -85,8 +85,8 @@ function getOptions(puzzle) {
                 }
             }
             /** Eliminate empties from the block containing the cell valueRowNum, valueColNum */
-            for (let blockNum = 0; blockNum < 9; blockNum++) {
-                const block = ALL_BLOCKS[`block${blockNum}`]
+            for (let blockNum in ALL_BLOCKS) {
+                const block = ALL_BLOCKS[blockNum];
                 if (block.find(cell => cell[0] == valueRowNum && cell[1] == valueColNum)) {
                     for (let [rowNum, colNum] of block) {
                         const cellValue = puzzle[rowNum][colNum];
@@ -134,12 +134,38 @@ function getLonelyValueCells(options) {
     /** Generate the options for the empty cells */
 }
 
-function fillCellAndUpdateOptions(puzzle, rowNum, colNum, value, options) {
-    /** Set cell value in puzzle */
-    puzzle[rowNum]
+function updateOptions(valueRowNum, valueColNum, value, options) {
+    /** Remove value from all cells in row # valueRowNum */
+    for (let colNum = 0; colNum < 9; colNum++) {
+        if (colNum in options[valueRowNum]) {
+            const newCellOptions = options[valueRowNum][colNum].filter(digit => digit !== value);
+            options[valueRowNum][colNum] = newCellOptions;
+        }
+    }
 
-    /** Update options */
-        /**  */
+    /** Remove value from all cells in col # valueColNum */
+    for (let rowNum = 0; rowNum < 9; rowNum++) {
+        if (rowNum in options && valueColNum in options[rowNum]) {
+            const newCellOptions = options[rowNum][valueColNum].filter(digit => digit !== value);
+            options[rowNum][valueColNum] = newCellOptions;
+        }
+    }
+
+    /** Remove value from all cells in same block as cell at valueRowNum, valueColNum */
+    for (let blockNum in ALL_BLOCKS) {
+        const block = ALL_BLOCKS[blockNum];
+        if (block.find(cell => cell[0] == valueRowNum && cell[1] == valueColNum)) {
+            for (let [rowNum, colNum] of block) {
+                if (rowNum in options && colNum in options[rowNum]) {
+                    const newCellOptions = options[rowNum][colNum].filter(digit => digit !== value);
+                    options[rowNum][colNum] = newCellOptions;
+                }
+            }
+            break;
+        }
+    }
+    
+    return options;
 }
 
 function fillSvAndLvCells(puzzle) {
@@ -148,10 +174,21 @@ function fillSvAndLvCells(puzzle) {
 
     /** Fill the single value cells */
     let singleValueCells = getSingleValueCells(options);
-    for (rowNum in singleValueCells) {
-        for (colNum in singleValueCells[rowNum]) {
-            const value = singleValueCells[rowNum][colNum];
-            fillCellAndUpdateOptions(puzzle, rowNum, colNum, value, options);
+    while (Object.keys(singleValueCells).length > 0) {
+        /** Fill all the single value cells */
+        for (rowNum in singleValueCells) {
+            for (colNum in singleValueCells[rowNum]) {
+                const value = singleValueCells[rowNum][colNum];
+                puzzle[rowNum][colNum] = value;
+                options = updateOptions(rowNum, colNum, value, options);
+            }
         }
+
+        /** Generate the single value cells for the updated options */
+        singleValueCells = getSingleValueCells(options);
     }
+
+    return puzzle;
 }
+
+console.log(TEST_PUZZLE_ROWS);
