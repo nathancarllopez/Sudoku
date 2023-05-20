@@ -14,15 +14,27 @@
  * */
 
 const TEST_PUZZLE_ROWS = {
-    0: [8, 0, 0, 0, 5, 1, 7, 9, 0],
-    1: [0, 0, 0, 0, 0, 0, 2, 0, 0],
-    2: [2, 7, 1, 8, 9, 3, 4, 0, 0],
-    3: [0, 6, 8, 7, 1, 2, 5, 0, 0],
-    4: [4, 5, 0, 6, 3, 9, 0, 0, 7],
-    5: [0, 1, 3, 0, 0, 4, 6, 2, 0],
-    6: [3, 8, 0, 0, 0, 5, 1, 7, 0],
-    7: [6, 9, 5, 1, 2, 0, 3, 4, 8],
-    8: [0, 2, 0, 3, 4, 0, 9, 0, 6],
+    0: [0,0,4,0,5,0,9,1,0],
+    1: [0,0,1,0,4,0,0,0,0],
+    2: [0,0,3,0,0,0,0,0,0],
+    3: [0,0,9,0,0,0,3,0,0],
+    4: [0,4,0,0,1,9,2,0,8],
+    5: [7,0,0,0,0,0,1,0,0],
+    6: [0,0,0,7,0,0,0,0,5],
+    7: [0,0,0,0,0,2,8,0,0],
+    8: [0,5,2,4,0,1,0,9,7],
+}
+
+const FINISHED_PUZZLE = {
+    0: [5,3,4,6,7,8,9,1,2],
+    1: [6,7,2,1,9,5,3,4,8],
+    2: [1,9,8,3,4,2,5,6,7],
+    3: [8,5,9,7,6,1,4,2,3],
+    4: [4,2,6,8,5,3,7,9,1],
+    5: [7,1,3,9,2,4,8,5,6],
+    6: [9,6,1,5,3,7,2,8,4],
+    7: [2,8,7,4,1,9,6,3,5],
+    8: [3,4,5,2,8,6,1,7,9],
 }
 
 const ALL_BLOCKS = {
@@ -101,11 +113,17 @@ function getOptions(puzzle) {
             }
         }
         /** Add value to options at all empty cells that have not been eliminated */
-        emptyCells.forEach(emptyCell => { // For each empty cell
-            for (index = 0; index < eliminatedEmptyCells.length; index++) { // Look through the
-                const eliminatedCell = eliminatedEmptyCells[index];         // eliminated cells
-                if (eliminatedCell[0] == emptyCell[0] && eliminatedCell[1] == emptyCell[1]) break; // If you find a match, move onto the next empty cell
-                if (index == eliminatedEmptyCells.length - 1) options[emptyCell[0]][emptyCell[1]].push(value); // If you didn't find a match, add value to options
+        emptyCells.forEach(emptyCell => {
+            for (index = 0; index < eliminatedEmptyCells.length + 1; index++) {
+                /** If we've reached the end of the loop, then no matches were found */
+                if (index == eliminatedEmptyCells.length) {
+                    options[emptyCell[0]][emptyCell[1]].push(value);
+                    break;
+                }
+
+                /** If the empty cell is one of the eliminated cells, then move onto the next empty cell */
+                const eliminatedCell = eliminatedEmptyCells[index];
+                if (eliminatedCell[0] == emptyCell[0] && eliminatedCell[1] == emptyCell[1]) break;
             }
         });
     }
@@ -113,14 +131,16 @@ function getOptions(puzzle) {
 }
 
 function getSingleValueCells(options) {
-    // /** Generate the options for the empty cells */
-    // const options = getOptions(puzzle);
-
-    /** Look through options to find cells that only have a single value */
+    /** Initialize an object to hold the result */
     const singleValueCells = {};
+
+    /** Look through options */
     for (rowNum in options) {
         for (colNum in options[rowNum]) {
+            /** Retrive the values at cell rowNum, colNum */
             const valueArray = options[rowNum][colNum];
+
+            /** If there is only one possible value, add rowNum, colNum, and the value to singleValueCells */
             if (valueArray.length == 1) {
                 const value = valueArray[0];
                 rowNum in singleValueCells ? singleValueCells[rowNum][colNum] = value : singleValueCells[rowNum] = {[colNum]: value};
@@ -131,10 +151,90 @@ function getSingleValueCells(options) {
 }
 
 function getLonelyValueCells(options) {
-    /** Generate the options for the empty cells */
+    /** Initialize an object to hold the result */
+    const lonelyValueCells = {};
+
+    /** For each value */
+    for (let value of [1,2,3,4,5,6,7,8,9]) {
+        /** Find any lonely cells in the rows */
+        for (rowNum in options) {
+            /** Collect all cells that have value as an option */
+            const rowCells = [];
+            for (colNum in options[rowNum]) {
+                const cellOptions = options[rowNum][colNum];
+                if (cellOptions.includes(value)) rowCells.push([rowNum, colNum]);
+            }
+
+            /** If there is only one cell collected, add it to lonelyValueCells */
+            if (rowCells.length == 1) {
+                const lonelyCell = rowCells[0];
+                const lonelyCellRowNum = lonelyCell[0];
+                const lonelyCellColNum = lonelyCell[1];
+                if (lonelyCellRowNum in lonelyValueCells) {
+                    lonelyValueCells[lonelyCellRowNum][lonelyCellColNum] = value;
+                } else {
+                    lonelyValueCells[lonelyCellRowNum] = {[lonelyCellColNum]: value};
+                }
+            }
+        }
+
+        /** Find any lonely cells in the columns */
+        for (colNum = 0; colNum < 9; colNum++) {
+            /** Collect all cells that have value as an option */
+            const colCells = [];
+            for (rowNum in options) {
+                if (colNum in options[rowNum]) {
+                    const cellOptions = options[rowNum][colNum];
+                    if (cellOptions.includes(value)) colCells.push([rowNum, colNum]);
+                }
+            }
+    
+            /** If there is only one cell collected, add it to lonelyValueCells */
+            if (colCells.length == 1) {
+                const lonelyCell = colCells[0];
+                const lonelyCellRowNum = lonelyCell[0];
+                const lonelyCellColNum = lonelyCell[1];
+                if (lonelyCellRowNum in lonelyValueCells) {
+                    lonelyValueCells[lonelyCellRowNum][lonelyCellColNum] = value;
+                } else {
+                    lonelyValueCells[lonelyCellRowNum] = {[lonelyCellColNum]: value};
+                }
+            }
+        }
+
+        /** Find any lonely cells in the blocks */
+        for (blockNum in ALL_BLOCKS) {
+            const block = ALL_BLOCKS[blockNum];
+            /** Collect all cells that have value as an option */
+            const blockCells = [];
+            for (let [rowNum, colNum] of block) {
+                if (rowNum in options && colNum in options[rowNum]) {
+                    const cellOptions = options[rowNum][colNum];
+                    if (cellOptions.includes(value)) blockCells.push([rowNum, colNum]);
+                }
+            }
+
+            /** If there is only one cell collected, add it to lonelyValueCells */
+            if (blockCells.length == 1) {
+                const lonelyCell = blockCells[0];
+                const lonelyCellRowNum = lonelyCell[0];
+                const lonelyCellColNum = lonelyCell[1];
+                if (lonelyCellRowNum in lonelyValueCells) {
+                    lonelyValueCells[lonelyCellRowNum][lonelyCellColNum] = value;
+                } else {
+                    lonelyValueCells[lonelyCellRowNum] = {[lonelyCellColNum]: value};
+                }
+            }
+        }
+
+    }
+    return lonelyValueCells;
 }
 
 function updateOptions(valueRowNum, valueColNum, value, options) {
+    /** Remove the cell at valueRowNum, valueColNum from options */
+    delete options[valueRowNum][valueColNum];
+
     /** Remove value from all cells in row # valueRowNum */
     for (let colNum = 0; colNum < 9; colNum++) {
         if (colNum in options[valueRowNum]) {
@@ -168,10 +268,7 @@ function updateOptions(valueRowNum, valueColNum, value, options) {
     return options;
 }
 
-function fillSvAndLvCells(puzzle) {
-    /** Generate the options for the empty cells */
-    let options = getOptions(puzzle);
-
+function fillSvCells(puzzle, options) {
     /** Fill the single value cells */
     let singleValueCells = getSingleValueCells(options);
     while (Object.keys(singleValueCells).length > 0) {
@@ -184,11 +281,133 @@ function fillSvAndLvCells(puzzle) {
             }
         }
 
-        /** Generate the single value cells for the updated options */
+        /** Generate the single value cells with the updated options */
         singleValueCells = getSingleValueCells(options);
     }
 
+    return [puzzle, options];
+}
+
+function fillLvAndSvCells(puzzle, options) {
+    /** Fill any single value cells */
+    [puzzle, options] = fillSvCells(puzzle, options);
+
+    /** Generate the lonely value cells */
+    let lonelyValueCells = getLonelyValueCells(options);
+    // console.log(lonelyValueCells);
+
+    /** Alternate filling lonely and single value cells until none of either remain */
+    while(Object.keys(lonelyValueCells).length > 0) {
+        /** Fill the lonely value cells */
+        for (rowNum in lonelyValueCells) {
+            for (colNum in lonelyValueCells[rowNum]) {
+                const value = lonelyValueCells[rowNum][colNum];
+                puzzle[rowNum][colNum] = value;
+                options = updateOptions(rowNum, colNum, value, options);
+            }
+        }
+
+        /** Fill any single value cells */
+        let singleValueCells = getSingleValueCells(options);
+        if (Object.keys(singleValueCells).length > 0) [puzzle, options] = fillSvCells(puzzle, options);
+
+        /** Generate the lonely value cells with the updated options */
+        lonelyValueCells = getLonelyValueCells(options);
+    }
+    
     return puzzle;
 }
 
-console.log(TEST_PUZZLE_ROWS);
+function checkForContradiction(puzzle, options) {
+    /** Initialize a boolean to return */
+    let contradiction = false;
+
+    /** Look through empty cells and check if options has an empty array */
+    for (let [rowNum, colNum] of getEmptyCells(puzzle)) {
+        if (options[rowNum][colNum] === []) contradiction = true;
+    }
+
+    return contradiction;
+}
+
+function buildGuessStack(puzzle, options) {
+    /** Initialize variables */
+    let guess = [];
+    let numberOfPossibilities = 10;
+
+    /** Find the first cell with the smallest number of options */
+    for (rowNum in options) {
+        for (colNum in options[rowNum]) {
+            // console.log(options[rowNum][colNum]);
+            const possibilites = options[rowNum][colNum];
+            if (possibilites.length < numberOfPossibilities) {
+                guess = [rowNum, colNum, possibilites];
+                numberOfPossibilities = possibilites.length;
+            }
+        }
+    }
+
+    /** Relabel the elements of guess */
+    const guessRow = guess[0];
+    const guessCol = guess[1];
+    const guessPossibilities = guess[2];
+    // console.log(guessRow, guessCol, guessPossibilities);
+
+    /** Create the guess stack */
+    const guessStack = [];
+    for (value of guessPossibilities) {
+        let duplicatePuzzle = JSON.parse(JSON.stringify(puzzle));
+        // console.log("duplicatePuzzle before guess", duplicatePuzzle);
+        duplicatePuzzle[guessRow][guessCol] = value;
+        // console.log("duplicate puzzle", duplicatePuzzle);
+        let duplicateOptions = getOptions(duplicatePuzzle);
+        // console.log("duplicate options", duplicateOptions);
+        duplicatePuzzle = fillLvAndSvCells(duplicatePuzzle, duplicateOptions);
+        guessStack.push(duplicatePuzzle);
+    }
+
+    return guessStack;
+}
+
+function solvePuzzle(inputPuzzle) {
+    /** Make a copy of the puzzle to work with */
+    let puzzle = JSON.parse(JSON.stringify(inputPuzzle));
+
+    /** Generate options and fill single value and lonely value cells */
+    let options = getOptions(puzzle);
+    puzzle = fillLvAndSvCells(puzzle, options);
+    // console.log(puzzle);
+
+    /** If the puzzle has no empty cells, return it */
+    let emptyCount = getEmptyCells(puzzle).length;
+    if (emptyCount == 0) return puzzle;
+
+    /** Regenerate options and build the guess stack */
+    options = getOptions(puzzle);
+    let guessStack = buildGuessStack(puzzle, options);
+    // console.log(guessStack);
+
+    /** While there are empty cells */
+    while (emptyCount > 0) {
+        /** Take the top puzzle off the stack and see how many empty cells it has */
+        puzzle = guessStack.pop();
+        // console.log('puzzle', puzzle);
+        emptyCount = getEmptyCells(puzzle).length;
+
+        /** If there are no empty cells, return the puzzle */
+        if (emptyCount == 0) return puzzle;
+
+        /** Otherwise, check the puzzle for a contradiction */
+        options = getOptions(puzzle);
+        if (!checkForContradiction(puzzle, options)) {
+            const puzzleChildren = buildGuessStack(puzzle, options);
+            puzzleChildren.forEach(kid => guessStack.push(kid));
+        }
+    }
+}
+
+const COPY_TEST_PUZZLE_ROWS = JSON.parse(JSON.stringify(TEST_PUZZLE_ROWS))
+
+// console.log('tpr', TEST_PUZZLE_ROWS);
+console.log(solvePuzzle(TEST_PUZZLE_ROWS));
+// console.log('sv and lv', fillLvAndSvCells(COPY_TEST_PUZZLE_ROWS, getOptions(COPY_TEST_PUZZLE_ROWS)));

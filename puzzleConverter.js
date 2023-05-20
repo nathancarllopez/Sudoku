@@ -19,7 +19,7 @@ function convertRowsToBlocks(puzzle) {
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
             const rowNum = 3*i + j;
-            const row = puzzle[`row${rowNum}`];
+            const row = puzzle[rowNum];
             for (let k = 0; k < 3; k++) {
                 const blockNum = 3*i + k;
                 const block = convertedPuzzle[`block${blockNum}`];

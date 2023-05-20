@@ -3,17 +3,64 @@
 /** The div that contains the whole puzzle */
 const puzzleContainer = document.querySelector('#puzzle-container');
 
-const TEST_PUZZLE_BLOCKS = {
-    block0: [8, 0, 0, 0, 0, 0, 2, 7, 1],
-    block1: [0, 5, 1, 0, 0, 0, 8, 9, 3],
-    block2: [7, 9, 0, 2, 0, 0, 4, 0, 0],
-    block3: [0, 6, 8, 4, 5, 0, 0, 1, 3],
-    block4: [7, 1, 2, 6, 3, 9, 0, 0, 4],
-    block5: [5, 0, 0, 0, 0, 7, 6, 2, 0],
-    block6: [3, 8, 0, 6, 9, 5, 0, 2, 0],
-    block7: [0, 0, 5, 1, 2, 0, 3, 4, 0],
-    block8: [1, 7, 0, 3, 4, 8, 9, 0, 6],
+// const TEST_PUZZLE_ROWS = {
+//     0: [0,0,4,0,5,0,9,1,0],
+//     1: [0,0,1,0,4,0,0,0,0],
+//     2: [0,0,3,0,0,0,0,0,0],
+//     3: [0,0,9,0,0,0,3,0,0],
+//     4: [0,4,0,0,1,9,2,0,8],
+//     5: [7,0,0,0,0,0,1,0,0],
+//     6: [0,0,0,7,0,0,0,0,5],
+//     7: [0,0,0,0,0,2,8,0,0],
+//     8: [0,5,2,4,0,1,0,9,7],
+// };
+
+/** Converts a puzzle object from rows to blocks */
+function convertRowsToBlocks(puzzle) {
+    /** Puzzle to be returned */
+    const convertedPuzzle = {
+        block0: [],
+        block1: [],
+        block2: [],
+        block3: [],
+        block4: [],
+        block5: [],
+        block6: [],
+        block7: [],
+        block8: [],
+    }
+
+    /** Iterate through the rows to extract blocks */
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            const rowNum = 3*i + j;
+            const row = puzzle[rowNum];
+            for (let k = 0; k < 3; k++) {
+                const blockNum = 3*i + k;
+                const block = convertedPuzzle[`block${blockNum}`];
+                for (let l = 0; l < 3; l++) {
+                    const rowIndex = 3*k + l;
+                    const rowValue = row[rowIndex];
+                    block.push(rowValue);
+                }
+            }
+        }
+    }
+
+    return convertedPuzzle;
 }
+
+const TEST_PUZZLE_BLOCKS = {
+    block0: [0,0,4,0,0,1,0,0,3],
+    block1: [0,5,0,0,4,0,0,0,0],
+    block2: [9,1,0,0,0,0,0,0,0],
+    block3: [0,0,9,0,4,0,7,0,0],
+    block4: [0,0,0,0,1,9,0,0,0],
+    block5: [3,0,0,2,0,8,1,0,0],
+    block6: [0,0,0,0,0,0,0,5,2],
+    block7: [7,0,0,0,0,2,4,0,1],
+    block8: [0,0,5,8,0,0,0,9,7],
+};
 
 function displayPuzzle(puzzle) {
     for (let i = 0; i < 9; i++) {
