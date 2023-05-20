@@ -294,7 +294,6 @@ function fillLvAndSvCells(puzzle, options) {
 
     /** Generate the lonely value cells */
     let lonelyValueCells = getLonelyValueCells(options);
-    // console.log(lonelyValueCells);
 
     /** Alternate filling lonely and single value cells until none of either remain */
     while(Object.keys(lonelyValueCells).length > 0) {
@@ -338,7 +337,6 @@ function buildGuessStack(puzzle, options) {
     /** Find the first cell with the smallest number of options */
     for (rowNum in options) {
         for (colNum in options[rowNum]) {
-            // console.log(options[rowNum][colNum]);
             const possibilites = options[rowNum][colNum];
             if (possibilites.length < numberOfPossibilities) {
                 guess = [rowNum, colNum, possibilites];
@@ -351,17 +349,13 @@ function buildGuessStack(puzzle, options) {
     const guessRow = guess[0];
     const guessCol = guess[1];
     const guessPossibilities = guess[2];
-    // console.log(guessRow, guessCol, guessPossibilities);
 
     /** Create the guess stack */
     const guessStack = [];
     for (value of guessPossibilities) {
         let duplicatePuzzle = JSON.parse(JSON.stringify(puzzle));
-        // console.log("duplicatePuzzle before guess", duplicatePuzzle);
         duplicatePuzzle[guessRow][guessCol] = value;
-        // console.log("duplicate puzzle", duplicatePuzzle);
         let duplicateOptions = getOptions(duplicatePuzzle);
-        // console.log("duplicate options", duplicateOptions);
         duplicatePuzzle = fillLvAndSvCells(duplicatePuzzle, duplicateOptions);
         guessStack.push(duplicatePuzzle);
     }
@@ -376,7 +370,6 @@ function solvePuzzle(inputPuzzle) {
     /** Generate options and fill single value and lonely value cells */
     let options = getOptions(puzzle);
     puzzle = fillLvAndSvCells(puzzle, options);
-    // console.log(puzzle);
 
     /** If the puzzle has no empty cells, return it */
     let emptyCount = getEmptyCells(puzzle).length;
@@ -385,13 +378,11 @@ function solvePuzzle(inputPuzzle) {
     /** Regenerate options and build the guess stack */
     options = getOptions(puzzle);
     let guessStack = buildGuessStack(puzzle, options);
-    // console.log(guessStack);
 
     /** While there are empty cells */
     while (emptyCount > 0) {
         /** Take the top puzzle off the stack and see how many empty cells it has */
         puzzle = guessStack.pop();
-        // console.log('puzzle', puzzle);
         emptyCount = getEmptyCells(puzzle).length;
 
         /** If there are no empty cells, return the puzzle */
@@ -405,9 +396,3 @@ function solvePuzzle(inputPuzzle) {
         }
     }
 }
-
-const COPY_TEST_PUZZLE_ROWS = JSON.parse(JSON.stringify(TEST_PUZZLE_ROWS))
-
-// console.log('tpr', TEST_PUZZLE_ROWS);
-console.log(solvePuzzle(TEST_PUZZLE_ROWS));
-// console.log('sv and lv', fillLvAndSvCells(COPY_TEST_PUZZLE_ROWS, getOptions(COPY_TEST_PUZZLE_ROWS)));
