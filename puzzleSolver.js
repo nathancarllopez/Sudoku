@@ -1,12 +1,12 @@
 /** 
  * This code solves sudoku puzzles 
  * 
- * A puzzle is an object of arrays, with each array storing the valeus of one row:
+ * A puzzle is an object of arrays, with each array storing the values of one row:
  * examplePuzzle = {
- *  row0: [1,2,3,4,5,6,7,8,9],
- *  row1: [2,3,4,5,6,7,8,9,1],
+ *  0: [1,2,3,4,5,6,7,8,9],
+ *  1: [2,3,4,5,6,7,8,9,1],
  *  ...
- *  row8: [9,1,2,3,4,5,6,7,8],
+ *  8: [9,1,2,3,4,5,6,7,8],
  * }
  * 
  * A value of 1-9 means the cell is already filled with that value,
@@ -14,15 +14,15 @@
  * */
 
 const TEST_PUZZLE_ROWS = {
-    0: [2,0,7,9,0,0,0,6,0],
-    1: [0,0,0,7,0,0,0,5,0],
-    2: [0,6,9,2,0,4,8,0,0],
-    3: [0,1,0,0,0,0,0,0,0],
-    4: [0,0,8,0,0,0,0,9,4],
-    5: [0,0,0,0,0,0,0,0,0],
-    6: [0,0,2,4,0,9,1,0,8],
-    7: [7,0,0,0,0,1,0,2,9],
-    8: [0,0,0,0,0,7,5,0,0],
+    0: [2,4,0,9,0,0,5,0,1],
+    1: [0,8,9,0,1,0,0,0,0],
+    2: [5,1,0,4,0,0,0,0,0],
+    3: [4,0,0,0,0,0,8,0,0],
+    4: [0,0,6,0,0,0,4,0,0],
+    5: [8,2,0,0,0,0,3,5,0],
+    6: [0,0,0,0,6,0,0,9,4],
+    7: [0,0,0,2,0,0,0,8,0],
+    8: [3,0,0,8,0,0,6,0,0],
 }
 
 const FINISHED_PUZZLE = {
@@ -37,6 +37,9 @@ const FINISHED_PUZZLE = {
     8: [3,4,5,2,8,6,1,7,9],
 }
 
+/**
+ * Hard coded access to the block positions of a puzzle
+ */
 const ALL_BLOCKS = {
     block0: [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]],
     block1: [[0,3],[0,4],[0,5],[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]],
@@ -48,6 +51,7 @@ const ALL_BLOCKS = {
     block7: [[6,3],[6,4],[6,5],[7,3],[7,4],[7,5],[8,3],[8,4],[8,5]],
     block8: [[6,6],[6,7],[6,8],[7,6],[7,7],[7,8],[8,6],[8,7],[8,8]],
 }
+
 
 function getCellsWithValue(puzzle, value) {
     const cellsWithValue = [];
@@ -64,8 +68,14 @@ function getEmptyCells(puzzle) {
     return getCellsWithValue(puzzle, 0);
 }
 
+/**
+ * A nested object representing the possible values that each empty cell could have
+ * 
+ * @param {*} puzzle - (object)
+ * @returns 
+ */
 function getOptions(puzzle) {
-    /** Build an empty object based on the empty cells */
+    /** Build a nested object keyed by the row- and column-number of the empty cells */
     const options = {};
     const emptyCells = getEmptyCells(puzzle);
     emptyCells.forEach(cell => {
@@ -74,7 +84,12 @@ function getOptions(puzzle) {
         rowNum in options ? options[rowNum][colNum] = [] : options[rowNum] = {[colNum]: []};
     });
 
-    /** Fill dictionary */
+    /** 
+     * Fill dictionary:
+     * 
+     * The idea is to iterate through the cells of each value and use their
+     * row- and column-numbers to eliminate
+     */
     for (let value of [1,2,3,4,5,6,7,8,9]) {
         const eliminatedEmptyCells = [];
         for (let [valueRowNum, valueColNum] of getCellsWithValue(puzzle, value)) {
@@ -130,6 +145,12 @@ function getOptions(puzzle) {
     return options;
 }
 
+/**
+ * Returns the single value cells determined by the options
+ * 
+ * @param {*} options (object) Possible values each empty cell could have
+ * @returns {*} singleValueCells (object) Cells with only one possible value
+ */
 function getSingleValueCells(options) {
     /** Initialize an object to hold the result */
     const singleValueCells = {};
@@ -156,8 +177,10 @@ function getLonelyValueCells(options) {
 
     /** For each value */
     for (let value of [1,2,3,4,5,6,7,8,9]) {
+
         /** Find any lonely cells in the rows */
         for (rowNum in options) {
+
             /** Collect all cells that have value as an option */
             const rowCells = [];
             for (colNum in options[rowNum]) {
@@ -165,7 +188,7 @@ function getLonelyValueCells(options) {
                 if (cellOptions.includes(value)) rowCells.push([rowNum, colNum]);
             }
 
-            /** If there is only one cell collected, add it to lonelyValueCells */
+            /** If only one cell was collected, add it to lonelyValueCells */
             if (rowCells.length == 1) {
                 const lonelyCell = rowCells[0];
                 const lonelyCellRowNum = lonelyCell[0];
@@ -231,7 +254,10 @@ function getLonelyValueCells(options) {
     return lonelyValueCells;
 }
 
-function updateOptions(valueRowNum, valueColNum, value, options) {
+function updateOptions(valueRowNum, valueColNum, value, inputOptions) {
+    /** Create a copy of the input options to work with */
+    let options = JSON.parse(JSON.stringify(inputOptions));
+
     /** Remove the cell at valueRowNum, valueColNum from options */
     delete options[valueRowNum][valueColNum];
 
@@ -268,81 +294,204 @@ function updateOptions(valueRowNum, valueColNum, value, options) {
     return options;
 }
 
-function fillSvCells(puzzle, options) {
-    /** Fill the single value cells */
-    let singleValueCells = getSingleValueCells(options);
-    while (Object.keys(singleValueCells).length > 0) {
-        /** Fill all the single value cells */
-        for (rowNum in singleValueCells) {
-            for (colNum in singleValueCells[rowNum]) {
-                const value = singleValueCells[rowNum][colNum];
-                puzzle[rowNum][colNum] = value;
-                options = updateOptions(rowNum, colNum, value, options);
-            }
-        }
+function checkOptionsForContradiction(puzzle, options) {
+    /** Initialize a boolean to return */
+    let contradiction = false;
 
-        /** Generate the single value cells with the updated options */
-        singleValueCells = getSingleValueCells(options);
+    /** Look through empty cells and check if options has an empty array */
+    for (let [rowNum, colNum] of getEmptyCells(puzzle)) {
+        if (options[rowNum][colNum].length == 0) contradiction = true;
     }
 
-    return [puzzle, options];
+    return contradiction;
+}
+
+function fillSvCells(puzzle, options) {
+    /** Initialize an array to hold the result, will be changed if no contradictions are found */
+    let result = false;
+
+    /** Retrieve the single value cells */
+    let singleValueCells = getSingleValueCells(options);
+
+    /** Initialize a boolean to indicate contradictions */
+    let contradictionFound = false;
+
+    /** While single value cells remain in the puzzle */
+    while (Object.keys(singleValueCells).length > 0) {
+        /** Look through the single value cells */
+        for (rowNum in singleValueCells) {
+            for (colNum in singleValueCells[rowNum]) {
+                /** Retrieve the value */
+                const value = singleValueCells[rowNum][colNum];
+
+                /** Fill the value in the puzzle and update options */
+                puzzle[rowNum][colNum] = value;
+                options = updateOptions(rowNum, colNum, value, options);
+
+                /** If the options have a contradiction exit the loop */
+                if (checkOptionsForContradiction(puzzle, options)) {
+                    contradictionFound = true;
+                    break;
+                }
+            }
+
+            /** Exit the loop if a contradiction is found */
+            if (contradictionFound) break;
+        }
+
+        /** If we found a contradiction, exit the while loop */
+        if (contradictionFound) {
+            break;
+        } 
+        /** Otherwise, look for new single value cells with the updated options */
+        else {
+            singleValueCells = getSingleValueCells(options);
+        }
+    }
+
+    /** If we did not find any contradictions, redefine result */
+    if (!contradictionFound) {
+        result = [puzzle, options];
+    }
+
+    return result;
 }
 
 function fillLvAndSvCells(puzzle, options) {
+    /** Initialize a variable to hold the result */
+    let result = false;
+
     /** Fill any single value cells */
-    [puzzle, options] = fillSvCells(puzzle, options);
+    let fillSvCellsResult = fillSvCells(puzzle, options);
+
+    /** If filling the single value cells gave a contradiction, return result */
+    if (!fillSvCellsResult) return result;
+
+    /** Otherwise, unpack result fillSvCellsResult array */
+    puzzle = fillSvCellsResult[0];
+    options = fillSvCellsResult[1];
 
     /** Generate the lonely value cells */
     let lonelyValueCells = getLonelyValueCells(options);
+
+    /** Initialize a boolean to indicate contradictions */
+    let contradictionFound = false;
 
     /** Alternate filling lonely and single value cells until none of either remain */
     while(Object.keys(lonelyValueCells).length > 0) {
         /** Fill the lonely value cells */
         for (rowNum in lonelyValueCells) {
             for (colNum in lonelyValueCells[rowNum]) {
+                /** Retrieve the value */
                 const value = lonelyValueCells[rowNum][colNum];
+
+                /** Fill the value in the puzzle and update the options */
                 puzzle[rowNum][colNum] = value;
                 options = updateOptions(rowNum, colNum, value, options);
+
+                /** If the options have a contradiction exit the loop */
+                if (checkOptionsForContradiction(puzzle, options)) {
+                    contradictionFound = true;
+                    break;
+                }
             }
+
+            /** Exit the loop if a contradiction was found */
+            if (contradictionFound) break;
         }
+
+        /** If a contradiction was found, exit the while loop */
+        if (contradictionFound) break;
 
         /** Fill any single value cells */
         let singleValueCells = getSingleValueCells(options);
-        if (Object.keys(singleValueCells).length > 0) [puzzle, options] = fillSvCells(puzzle, options);
+        if (Object.keys(singleValueCells).length > 0) {
+            fillSvCellsResult = fillSvCells(puzzle, options);
+            if (!fillSvCellsResult) return result;
+            puzzle = fillSvCellsResult[0];
+            options = fillSvCellsResult[1];
+        }
 
         /** Generate the lonely value cells with the updated options */
         lonelyValueCells = getLonelyValueCells(options);
     }
-    
-    return puzzle;
-}
 
-function checkForContradiction(puzzle, options) {
-    /** Initialize a boolean to return */
-    let contradiction = false;
-
-    /** Look through empty cells and check if options has an empty array */
-    for (let [rowNum, colNum] of getEmptyCells(puzzle)) {
-        if (options[rowNum][colNum] === []) contradiction = true;
+    /** If we did not find any contradictions, redefine result */
+    if (!contradictionFound) {
+        result = puzzle;
     }
 
-    return contradiction;
+    return result;
 }
+
+// function checkPuzzleForContradiction(puzzle) {
+//     /** Initialize a boolean to return */
+//     let contradiction = false;
+
+//     /** Check rows for duplicates */
+//     for (let rowNum = 0; rowNum < 9; rowNum++) {
+//         const nonZeroRowValues = [];
+//         for (let colNum = 0; colNum < 9; colNum++) {
+//             const value = puzzle[rowNum][colNum];
+//             if (value) nonZeroRowValues.push(value);
+//         }
+//         if ((new Set(nonZeroRowValues)).size !== nonZeroRowValues.length) {
+//             contradiction = true;
+//             return contradiction;
+//         }
+//     }
+
+//     /** Check columns for duplicates */
+//     for (let colNum = 0; colNum < 9; colNum++) {
+//         const nonZeroColValues = [];
+//         for (let rowNum = 0; rowNum < 9; rowNum++) {
+//             const value = puzzle[rowNum][colNum];
+//             if (value) nonZeroColValues.push(value);
+//         }
+//         if ((new Set(nonZeroColValues)).size !== nonZeroColValues.length) {
+//             contradiction = true;
+//             return contradiction;
+//         }
+//     }
+
+//     /** Check blocks for duplicates */
+//     for (let blockNum in ALL_BLOCKS) {
+//         const block = ALL_BLOCKS[blockNum];
+//         const nonZeroBlockValues = [];
+//         for (let [rowNum, colNum] of block) {
+//             const value = puzzle[rowNum][colNum];
+//             if (value) nonZeroBlockValues.push(value);
+//         }
+//         if ((new Set(nonZeroBlockValues)).size !== nonZeroBlockValues.length) {
+//             contradiction = true;
+//             return contradiction;
+//         }
+//     }
+
+//     return contradiction;
+// }
 
 function buildGuessStack(puzzle, options) {
     /** Initialize variables */
     let guess = [];
-    let numberOfPossibilities = 10;
+    let minNumberOfPossibilities = 1;
 
     /** Find the first cell with the smallest number of options */
-    for (rowNum in options) {
-        for (colNum in options[rowNum]) {
-            const possibilites = options[rowNum][colNum];
-            if (possibilites.length < numberOfPossibilities) {
-                guess = [rowNum, colNum, possibilites];
-                numberOfPossibilities = possibilites.length;
+    let guessFound = false;
+    while (guess.length == 0) {
+        for (rowNum in options) {
+            for (colNum in options[rowNum]) {
+                const possibilites = options[rowNum][colNum];
+                if (possibilites.length == minNumberOfPossibilities) {
+                    guess = [rowNum, colNum, possibilites];
+                    guessFound = true;
+                }
+                if (guessFound) break;
             }
+            if (guessFound) break;
         }
+        minNumberOfPossibilities++;
+        if (minNumberOfPossibilities > 9) throw 'Possibilities too large';
     }
 
     /** Relabel the elements of guess */
@@ -352,12 +501,25 @@ function buildGuessStack(puzzle, options) {
 
     /** Create the guess stack */
     const guessStack = [];
-    for (value of guessPossibilities) {
+    for (guessValue of guessPossibilities) {
+        /** Create a copy of the puzzle */
         let duplicatePuzzle = JSON.parse(JSON.stringify(puzzle));
-        duplicatePuzzle[guessRow][guessCol] = value;
-        let duplicateOptions = getOptions(duplicatePuzzle);
-        duplicatePuzzle = fillLvAndSvCells(duplicatePuzzle, duplicateOptions);
-        guessStack.push(duplicatePuzzle);
+
+        /** Fill in the guess cell with one of the possibilities and update the options */
+        duplicatePuzzle[guessRow][guessCol] = guessValue;
+        let duplicateOptions = updateOptions(guessRow, guessCol, guessValue, options);
+
+        /** If duplicateOptions has a contradiction, skip to the next guess value */
+        if (checkOptionsForContradiction(duplicatePuzzle, duplicateOptions)) continue;
+
+        /** Fill the single- and lonely-value cells */
+        let fillLvAndSvCellsResult = fillLvAndSvCells(duplicatePuzzle, duplicateOptions);
+
+        /** If filling the lonely- and single-value cells produced a contradiction, skip to the next guess value */
+        if (fillLvAndSvCellsResult === false) continue;
+        
+        /** Otherwise, add the filled-in puzzle to the top of the guess stack */
+        guessStack.push(fillLvAndSvCellsResult)
     }
 
     return guessStack;
@@ -367,32 +529,53 @@ function solvePuzzle(inputPuzzle) {
     /** Make a copy of the puzzle to work with */
     let puzzle = JSON.parse(JSON.stringify(inputPuzzle));
 
-    /** Generate options and fill single value and lonely value cells */
-    let options = getOptions(puzzle);
-    puzzle = fillLvAndSvCells(puzzle, options);
+    // /** Generate options and fill single value and lonely value cells */
+    // let options = getOptions(puzzle);
+    // puzzle = fillLvAndSvCells(puzzle, options);
 
     /** If the puzzle has no empty cells, return it */
     let emptyCount = getEmptyCells(puzzle).length;
     if (emptyCount == 0) return puzzle;
 
-    /** Regenerate options and build the guess stack */
+    /** Generate options and build the main guess stack */
     options = getOptions(puzzle);
     let guessStack = buildGuessStack(puzzle, options);
+    // console.log("guess stack before while loop", guessStack);
 
     /** While there are empty cells */
     while (emptyCount > 0) {
+        // console.log("guess stack in while loop", guessStack);
+
         /** Take the top puzzle off the stack and see how many empty cells it has */
         puzzle = guessStack.pop();
+        // console.log("puzzle", puzzle);
         emptyCount = getEmptyCells(puzzle).length;
 
         /** If there are no empty cells, return the puzzle */
         if (emptyCount == 0) return puzzle;
 
-        /** Otherwise, check the puzzle for a contradiction */
+        /** Otherwise, check this puzzle for contradictions */
         options = getOptions(puzzle);
-        if (!checkForContradiction(puzzle, options)) {
-            const puzzleChildren = buildGuessStack(puzzle, options);
-            puzzleChildren.forEach(kid => guessStack.push(kid));
+        if (!checkOptionsForContradiction(puzzle, options)) {
+            /** If not, build a guess stack for this puzzle */
+            const childGuessStack = buildGuessStack(puzzle, options);
+
+            /** Add the new guess stack to the main guess stack */
+            childGuessStack.forEach(kid => guessStack.push(kid));
         }
+
+        // /** Otherwise, check the puzzle for any contradictions */
+        // options = getOptions(puzzle);
+        // if (!checkOptionsForContradiction(puzzle, options)) {
+        //     if (!checkPuzzleForContradiction(puzzle)) {
+                
+        //         /**  */
+        //         const puzzleChildren = buildGuessStack(puzzle, options);
+        //         puzzleChildren.forEach(kid => guessStack.push(kid));
+        //     }
+        // }
     }
 }
+
+console.log("input", TEST_PUZZLE_ROWS)
+console.log("solution", solvePuzzle(TEST_PUZZLE_ROWS));
