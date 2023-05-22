@@ -27,6 +27,21 @@
 /** The div that contains the whole puzzle */
 const PUZZLE_CONTAINER = document.querySelector('#puzzle-container');
 
+/** The div that contains the instructions and score */
+const INSTRUCTIONS_AND_SCORE_CONTAINER = document.querySelector('#instructions-and-score-container');
+
+/** The p that displays the score */
+const SCORE_STRING = document.querySelector('#strikes');
+
+/** The number of wrong answers entered */
+let STRIKES = 0;
+
+/** Indicates a game over */
+let GAME_OVER = false;
+
+/** Stopwatch timer ID */
+let STOPWATCH_ID;
+
 /** Two testing puzzles */
 const TEST_PUZZLE_1 = [
     [2,0,7,9,0,0,0,6,0],
@@ -170,166 +185,46 @@ function displayPuzzle(puzzle) {
         PUZZLE_CONTAINER.appendChild(block);
     }
 
+    PUZZLE_CONTAINER.setAttribute('style', 'border-right-width: 5px');
+    manageStopwatch();
+
     console.log("The solution", solvedPuzzle);
 }
 
-/**
- * ************************
- * Event listener functions
- * ************************
- */
-
-/**
- * When the mouse is hovering over a subcell,
- * this function changes the text content from
- * transparent to red
- * 
- * @param {*} event 
- */
-function subCellFill(event) {
-    /** Target subCell */
-    const subCell = event.target;
-
-    /** Change color to red */
-    subCell.setAttribute('id', 'selected-sub-cell');
-}
-
-/**
- * When the mouse stops hovering over a subcell,
- * this function changes the text content from
- * red to transparent
- * 
- * @param {*} event 
- */
-function subCellDefault(event) {
-    /** Target subcell */
-    const subCell = event.target;
-
-    /** Change color to black */
-    subCell.setAttribute('id', 'sub-cell');
-}
-
-/**
- * When a subcell is clicked, this function first
- * distinguishes click from shift+click. Then, it
- * activates the corresponding function: a click
- * activates a pencil mark being created, and a 
- * shift+click activates a cell being filled
- * 
- * @param {*} event 
- */
-function clickSubCellWhichType(event, solvedPuzzle) {
-    /** Target subcell */
-    const subCell = event.target;
-
-    /** Check if shift is pressed */
-    const shiftPressed = event.shiftKey;
-    if (shiftPressed) {
-        subCellShiftClick(subCell, solvedPuzzle);
+function manageStopwatch() {
+    if (GAME_OVER) {
+        console.log("game over")
+        clearInterval(STOPWATCH_ID);
     } else {
-        subCellClick(subCell);
+        let minutesLabel = document.getElementById("minutes");
+        let secondsLabel = document.getElementById("seconds");
+        let totalSeconds = 0;
+
+        function setTime() {
+            ++totalSeconds;
+            secondsLabel.textContent = pad(totalSeconds%60);
+            minutesLabel.textContent = pad(parseInt(totalSeconds/60));
+        }
+
+        function pad(val) {
+            let valString = val + "";
+            if(valString.length < 2) {
+                return "0" + valString;
+            } else {
+                return valString;
+            }
+        }
+
+        STOPWATCH_ID = setInterval(setTime, 1000);
     }
 }
 
 /**
- * When a subcell is clicked, this function creates or
- * removes a pencil mark. That is, it changes the subcell
- * text color to black or back to transparent.
- * 
- * @param {*} subCell 
+ * ***********************************
+ * Functions called by event listeners
+ * ***********************************
  */
-function subCellClick(subCell) { 
-    /** Retrieve subcell id and subcell value */
-    const subCellId = subCell.getAttribute('id');
-    const subCellValue = subCell.textContent;
-
-    /** Retrieve parent cell of subcell */
-    const parentCell = subCell.parentNode;
-
-    /** Change selected sub cells to filled, and vice-a-versa */
-    if (subCellId == 'selected-sub-cell') {
-        selectedToFilled(subCell, subCellValue, parentCell);
-    } else if (subCellId == 'filled-sub-cell') {
-        filledToDefault(subCell, subCellValue, parentCell);
-    }
-}
 //#region
-
-/**
- * Subfunction of subCellClick
- * 
- * @param {*} subCell 
- * @param {*} subCellValue 
- * @param {*} parentCell 
- */
-function selectedToFilled(subCell, subCellValue, parentCell) {
-    /** Remove hover event listeners */
-    subCell.removeEventListener('mouseenter', subCellFill);
-    subCell.removeEventListener('mouseleave', subCellDefault);
-
-    /** Change color of subcell */
-    subCell.setAttribute('id', 'filled-sub-cell');
-
-    /** Add class to parent cell */
-    parentCell.classList.add(`value-${subCellValue}`);
-}
-
-/**
- * Subfunction of subCellClick
- * 
- * @param {*} subCell 
- * @param {*} subCellValue 
- * @param {*} parentCell 
- */
-function filledToDefault(subCell, subCellValue, parentCell) {
-    /** Remove class from parent cell */
-    parentCell.classList.remove(`value-${subCellValue}`);
-
-    /** Change color of subcell */
-    subCell.setAttribute('id', 'sub-cell');
-
-    /** Add hover event listeners */
-    subCell.addEventListener('mouseenter', subCellFill);
-    subCell.addEventListener('mouseleave', subCellDefault);
-}
-//#endregion
-
-/**
- * When a subcell is shift+clicked, 
- * 
- * @param {*} subCell 
- */
-function subCellShiftClick(subCell, solvedPuzzle) {
-    /** Target parent cell of subcell and retrieve subcell value */
-    const parentCell = subCell.parentNode;
-    const parentCellClassList = parentCell.classList;
-    const parentCellRowString = parentCellClassList[0];
-    const parentCellRowNum = parentCellRowString.slice(-1);
-    const parentCellColString = parentCellClassList[1];
-    const parentCellColNum =  parentCellColString.slice(-1);
-    const subCellValue = subCell.textContent;
-
-    /** Compare with solved puzzle */
-    const solutionCellValue = solvedPuzzle[parentCellRowNum][parentCellColNum];
-    console.log("solution", solutionCellValue);
-    console.log("guess", subCellValue);
-    if (subCellValue == solutionCellValue) {
-        /** Remove all other subcells of parent subcell */
-        parentCell.childNodes.forEach(child => parentCell.removeChild(child));
-
-        /** Change attributes of cell, its content, and add a click event */
-        parentCell.setAttribute('id', 'filled-cell');
-        parentCell.classList.add(`value-${subCellValue}`);
-        parentCell.textContent = subCellValue;
-        parentCell.addEventListener('click', cellClick);
-
-        /** Remove pencil marks from adjacent cells */
-        removeOutdatedPencilMarks(parentCell, subCellValue);
-    } else {
-        console.log('wrong answer');
-    }
-}
-
 function removeOutdatedPencilMarks(inputCell, inputValue) {
     /** Get the class list of the input cell */
     const inputCellClassList = inputCell.classList;
@@ -386,6 +281,180 @@ function removeOutdatedPencilMarks(inputCell, inputValue) {
             }
         });
     });
+}
+
+function punishWrongAnswer() {
+    if (!GAME_OVER) {
+        STRIKES++;
+        if (STRIKES == 1) {
+            SCORE_STRING.textContent = `You have ${STRIKES} strike.`
+        } else if (STRIKES == 2) {
+            SCORE_STRING.textContent = `You have ${STRIKES} strikes.`
+        } else {
+            SCORE_STRING.textContent = `You have ${STRIKES} strikes.`
+            const gameOverMessage = document.createElement('p');
+            gameOverMessage.textContent = "game over";
+            INSTRUCTIONS_AND_SCORE_CONTAINER.appendChild(gameOverMessage);
+            GAME_OVER = true;
+            manageStopwatch();
+        }
+    }
+}
+
+/**
+ * When a subcell is clicked, this function creates or
+ * removes a pencil mark. That is, it changes the subcell
+ * text color to black or back to transparent.
+ * 
+ * @param {*} subCell 
+ */
+function subCellClick(subCell) { 
+    /** Retrieve subcell id and subcell value */
+    const subCellId = subCell.getAttribute('id');
+    const subCellValue = subCell.textContent;
+
+    /** Retrieve parent cell of subcell */
+    const parentCell = subCell.parentNode;
+
+    /** Change selected sub cells to filled, and vice-a-versa */
+    if (subCellId == 'selected-sub-cell') {
+        selectedToFilled(subCell, subCellValue, parentCell);
+    } else if (subCellId == 'filled-sub-cell') {
+        filledToDefault(subCell, subCellValue, parentCell);
+    }
+}
+
+/**
+ * Subfunction of subCellClick
+ * 
+ * @param {*} subCell 
+ * @param {*} subCellValue 
+ * @param {*} parentCell 
+ */
+function selectedToFilled(subCell, subCellValue, parentCell) {
+    /** Remove hover event listeners */
+    subCell.removeEventListener('mouseenter', subCellFill);
+    subCell.removeEventListener('mouseleave', subCellDefault);
+
+    /** Change color of subcell */
+    subCell.setAttribute('id', 'filled-sub-cell');
+
+    /** Add class to parent cell */
+    parentCell.classList.add(`value-${subCellValue}`);
+}
+
+/**
+ * Subfunction of subCellClick
+ * 
+ * @param {*} subCell 
+ * @param {*} subCellValue 
+ * @param {*} parentCell 
+ */
+function filledToDefault(subCell, subCellValue, parentCell) {
+    /** Remove class from parent cell */
+    parentCell.classList.remove(`value-${subCellValue}`);
+
+    /** Change color of subcell */
+    subCell.setAttribute('id', 'sub-cell');
+
+    /** Add hover event listeners */
+    subCell.addEventListener('mouseenter', subCellFill);
+    subCell.addEventListener('mouseleave', subCellDefault);
+}
+
+/**
+ * When a subcell is shift+clicked, 
+ * 
+ * @param {*} subCell 
+ */
+function subCellShiftClick(subCell, solvedPuzzle) {
+    /** Target parent cell of subcell and retrieve subcell value */
+    const parentCell = subCell.parentNode;
+    const parentCellClassList = parentCell.classList;
+    const parentCellRowString = parentCellClassList[0];
+    const parentCellRowNum = parentCellRowString.slice(-1);
+    const parentCellColString = parentCellClassList[1];
+    const parentCellColNum =  parentCellColString.slice(-1);
+    const subCellValue = subCell.textContent;
+
+    /** Compare with solved puzzle */
+    const solutionCellValue = solvedPuzzle[parentCellRowNum][parentCellColNum];
+    // console.log("solution", solutionCellValue);
+    // console.log("guess", subCellValue);
+    if (subCellValue == solutionCellValue) {
+        /** Remove all other subcells of parent subcell */
+        parentCell.childNodes.forEach(child => parentCell.removeChild(child));
+
+        /** Change attributes of cell, its content, and add a click event */
+        parentCell.setAttribute('id', 'filled-cell');
+        parentCell.classList.add(`value-${subCellValue}`);
+        parentCell.textContent = subCellValue;
+        parentCell.addEventListener('click', cellClick);
+
+        /** Remove pencil marks from adjacent cells */
+        removeOutdatedPencilMarks(parentCell, subCellValue);
+    } else {
+        punishWrongAnswer();
+    }
+}
+//#endregion
+
+/**
+ * ************************
+ * Event listener functions
+ * ************************
+ */
+//#region
+/**
+ * When the mouse is hovering over a subcell,
+ * this function changes the text content from
+ * transparent to red
+ * 
+ * @param {*} event 
+ */
+function subCellFill(event) {
+    /** Target subCell */
+    const subCell = event.target;
+
+    /** Change color to red */
+    subCell.setAttribute('id', 'selected-sub-cell');
+}
+
+/**
+ * When the mouse stops hovering over a subcell,
+ * this function changes the text content from
+ * red to transparent
+ * 
+ * @param {*} event 
+ */
+function subCellDefault(event) {
+    /** Target subcell */
+    const subCell = event.target;
+
+    /** Change color to black */
+    subCell.setAttribute('id', 'sub-cell');
+}
+
+/**
+ * When a subcell is clicked, this function first
+ * distinguishes click from shift+click. Then, it
+ * activates the corresponding function: a click
+ * activates a pencil mark being created, and a 
+ * shift+click activates a cell being filled
+ * 
+ * @param {*} event 
+ */
+function clickSubCellWhichType(event, solvedPuzzle) {
+    /** Target subcell */
+    const subCell = event.target;
+
+    /** Check if shift is pressed */
+    const shiftPressed = event.shiftKey;
+    if (shiftPressed) {
+        subCellShiftClick(subCell, solvedPuzzle);
+    } else {
+        subCellClick(subCell);
+    }
 }
 
 function cellClick(event) {
