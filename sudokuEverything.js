@@ -36,6 +36,9 @@ const SCORE_STRING = document.querySelector('#strikes');
 /** The p that displays a message at game over */
 const GAME_OVER_MESSAGE = document.querySelector('#game-over-message');
 
+/** The form that controls difficulty */
+const START_BUTTON = document.querySelector('#start-game-button');
+
 /** The empty cells */
 let EMPTY_CELLS;
 
@@ -123,8 +126,30 @@ const ALL_BLOCKS = [
  * *******************************************
  */
 //#region
+//#region
+
+/** Add an event listener to the start button */
+START_BUTTON.addEventListener('click', startGame);
+
 /**
- * Main function: creates and displays the puzzle as
+ * 
+ * 
+ */
+function startGame(event) {
+    const difficultyRadioButtons = document.querySelectorAll('input[name="difficulty"]');
+    let selectedDifficulty;
+    for (const radioButton of difficultyRadioButtons) {
+        console.log(radioButton);
+        if (radioButton.checked) {
+            selectedDifficulty = radioButton.value;
+            break;
+        }
+    }
+    console.log(selectedDifficulty);
+}
+
+/**
+ * Creates and displays the puzzle as
  * a nested grid of divs. Manages event listeners to 
  * cells and subcells
  * 
@@ -225,6 +250,7 @@ function manageStopwatch() {
         STOPWATCH_ID = setInterval(setTime, 1000);
     }
 }
+//#endregion
 
 /**
  * ***********************************
@@ -421,6 +447,7 @@ function subCellShiftClick(subCell, solvedPuzzle) {
  * ************************
  */
 //#region
+
 /**
  * When the mouse is hovering over a subcell,
  * this function changes the text content from
@@ -508,6 +535,7 @@ function cellClick(event) {
         sameValueCells.forEach(cell => cell.setAttribute('style', 'background-color: lightblue'));
     }
 }
+//#endregion
 //#endregion
 
 /** ******************************************
@@ -1045,7 +1073,7 @@ function countSolutions(inputPuzzle, max = 2) {
     return solutionCount;
 }
 
-function buildAPuzzle() {
+function buildAPuzzle(difficulty) {
     let puzzle = JSON.parse(JSON.stringify(BLANK_PUZZLE))
     let emptyCells = getEmptyCells(puzzle);
     let options = getOptions(puzzle);
@@ -1089,6 +1117,51 @@ function buildAPuzzle() {
         iterations++;
     }
 }
+
+// function buildAPuzzle() {
+//     let puzzle = JSON.parse(JSON.stringify(BLANK_PUZZLE))
+//     let emptyCells = getEmptyCells(puzzle);
+//     let options = getOptions(puzzle);
+
+//     let iterations = 0;
+//     while (true) {
+//         /** Random empty cell */
+//         let randomIndex = Math.floor(Math.random() * emptyCells.length);
+//         const randomCell = emptyCells.splice(randomIndex, 1)[0]; // Works like 
+//                                                                  // list.pop(index)
+//                                                                  // from Python
+
+//         /** Random value from options */
+//         const randomCellPossibilities = options[randomCell[0]][randomCell[1]];
+//         randomIndex = Math.floor(Math.random() * randomCellPossibilities.length);
+//         const randomValue = randomCellPossibilities.splice(randomIndex, 1)[0];
+
+//         /** Update the puzzle */
+//         puzzle[randomCell[0]][randomCell[1]] = randomValue;
+//         let updatedOptions = updateOptions(randomCell[0], randomCell[1], randomValue, options);
+
+//         /** If the puzzle has a unique solution, return it */
+//         if (countSolutions(puzzle) == 1) {
+//             console.log(`This puzzle took ${iterations} iterations to build.`);
+//             return puzzle;
+//         }
+
+//         /** If the puzzle has no solutions, reverse the update */
+//         if (countSolutions(puzzle) == 0) {
+//             puzzle[randomCell[0]][randomCell[1]] = 0;
+//             emptyCells.push(randomCell);
+//         }
+
+//         /** Otherwise, the puzzle has at least two solutions */
+//         else {
+//             /** Reassign options to updatedOptions */
+//             options = updatedOptions;
+//         }
+        
+//         /** Count the iterations */
+//         iterations++;
+//     }
+// }
 //#endregion
 
 /** ******************************************

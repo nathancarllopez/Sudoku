@@ -54,6 +54,10 @@
     width: 180px;
 }
 
+#stopwatch-container {
+    justify-content: center;
+}
+
 #puzzle-container {
     display: grid;
     grid-template-columns: repeat(3, 180px);

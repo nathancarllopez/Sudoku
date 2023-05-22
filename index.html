@@ -13,6 +13,28 @@
 
     <div id="main-container">
         <div id="instructions-and-score-container">
+            <h3>Basic Settings</h3>
+
+            <p>Select a difficulty:</p>
+            <div id="difficulty-settings-container">
+                <div id="difficulty-radio-buttons-container">
+                    <input type="radio" id="easy" name="difficulty" value="easy">
+                    <label for="easy">Easy</label><br>
+                    <input type="radio" id="hard" name="difficulty" value="hard">
+                    <label for="hard">Hard</label><br>
+                </div>
+                <div id="difficulty-submit-button-container">
+                    <button id="start-game-button">Start game</button>
+                </div>
+            </div>
+
+            <!-- <br>
+
+            <div id="button-container">
+                <button id="end-and-solve">Solve the puzzle</button>
+                <button id="give-hint">Give a hint</button>
+            </div> -->
+
             <h3>Instructions</h3>
             <ul>
                 <li>Click a number to create a pencil mark</li>
@@ -20,20 +42,23 @@
                 <li>Three wrong answers lead to a game over</li>
             </ul>
 
+            <h3>Timer</h3>
             <div id="stopwatch-container">
-                <h3>Timer</h3>
-
                 <label id="minutes">00</label>
                 <label id="colon">:</label>
                 <label id="seconds">00</label>
             </div>
 
-            <h3>Score and Strikes</h3>
+            <h3>Strikes</h3>
             <p id="strikes">You have no strikes.</p>
             <p id="game-over-message"></p>
         </div>
 
         <div id="puzzle-container"></div>
+
+        <div id="advanced-settings-container">
+            <h3>Advanced settings</h3>
+        </div>
     </div>
 
 </body>
