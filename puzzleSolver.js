@@ -424,53 +424,6 @@ function fillLvAndSvCells(puzzle, options) {
     return result;
 }
 
-// function checkPuzzleForContradiction(puzzle) {
-//     /** Initialize a boolean to return */
-//     let contradiction = false;
-
-//     /** Check rows for duplicates */
-//     for (let rowNum = 0; rowNum < 9; rowNum++) {
-//         const nonZeroRowValues = [];
-//         for (let colNum = 0; colNum < 9; colNum++) {
-//             const value = puzzle[rowNum][colNum];
-//             if (value) nonZeroRowValues.push(value);
-//         }
-//         if ((new Set(nonZeroRowValues)).size !== nonZeroRowValues.length) {
-//             contradiction = true;
-//             return contradiction;
-//         }
-//     }
-
-//     /** Check columns for duplicates */
-//     for (let colNum = 0; colNum < 9; colNum++) {
-//         const nonZeroColValues = [];
-//         for (let rowNum = 0; rowNum < 9; rowNum++) {
-//             const value = puzzle[rowNum][colNum];
-//             if (value) nonZeroColValues.push(value);
-//         }
-//         if ((new Set(nonZeroColValues)).size !== nonZeroColValues.length) {
-//             contradiction = true;
-//             return contradiction;
-//         }
-//     }
-
-//     /** Check blocks for duplicates */
-//     for (let blockNum in ALL_BLOCKS) {
-//         const block = ALL_BLOCKS[blockNum];
-//         const nonZeroBlockValues = [];
-//         for (let [rowNum, colNum] of block) {
-//             const value = puzzle[rowNum][colNum];
-//             if (value) nonZeroBlockValues.push(value);
-//         }
-//         if ((new Set(nonZeroBlockValues)).size !== nonZeroBlockValues.length) {
-//             contradiction = true;
-//             return contradiction;
-//         }
-//     }
-
-//     return contradiction;
-// }
-
 function buildGuessStack(puzzle, options) {
     /** Initialize variables */
     let guess = [];
@@ -529,10 +482,6 @@ function solvePuzzle(inputPuzzle) {
     /** Make a copy of the puzzle to work with */
     let puzzle = JSON.parse(JSON.stringify(inputPuzzle));
 
-    // /** Generate options and fill single value and lonely value cells */
-    // let options = getOptions(puzzle);
-    // puzzle = fillLvAndSvCells(puzzle, options);
-
     /** If the puzzle has no empty cells, return it */
     let emptyCount = getEmptyCells(puzzle).length;
     if (emptyCount == 0) return puzzle;
@@ -540,15 +489,12 @@ function solvePuzzle(inputPuzzle) {
     /** Generate options and build the main guess stack */
     options = getOptions(puzzle);
     let guessStack = buildGuessStack(puzzle, options);
-    // console.log("guess stack before while loop", guessStack);
 
     /** While there are empty cells */
     while (emptyCount > 0) {
-        // console.log("guess stack in while loop", guessStack);
 
         /** Take the top puzzle off the stack and see how many empty cells it has */
         puzzle = guessStack.pop();
-        // console.log("puzzle", puzzle);
         emptyCount = getEmptyCells(puzzle).length;
 
         /** If there are no empty cells, return the puzzle */
@@ -563,17 +509,6 @@ function solvePuzzle(inputPuzzle) {
             /** Add the new guess stack to the main guess stack */
             childGuessStack.forEach(kid => guessStack.push(kid));
         }
-
-        // /** Otherwise, check the puzzle for any contradictions */
-        // options = getOptions(puzzle);
-        // if (!checkOptionsForContradiction(puzzle, options)) {
-        //     if (!checkPuzzleForContradiction(puzzle)) {
-                
-        //         /**  */
-        //         const puzzleChildren = buildGuessStack(puzzle, options);
-        //         puzzleChildren.forEach(kid => guessStack.push(kid));
-        //     }
-        // }
     }
 }
 
