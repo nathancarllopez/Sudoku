@@ -124,7 +124,6 @@ function displayPuzzle(puzzle) {
                 cellClassList.add(`value-${cellValue}`);
                 cell.addEventListener('click', cellClick);
             }
-            
 
             /** Add each cell to its block */
             block.appendChild(cell);
@@ -210,6 +209,8 @@ function subCellShiftClick(subCell) {
     /** Target parent cell of subcell and retrieve subcell value */
     const parentCell = subCell.parentNode;
     const subCellValue = subCell.textContent;
+
+    /** Compare with solved puzzle */
 
     /** Remove all other subcells of parent subcell */
     parentCell.childNodes.forEach(child => parentCell.removeChild(child));
