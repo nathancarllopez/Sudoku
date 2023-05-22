@@ -11,11 +11,28 @@
 <body onload="displayPuzzle(buildAPuzzle())">
     <h1>Sudoku</h1>
 
-    <h3>Instructions</h3>
-    <ul>
-        <li>Click a number to create a pencil mark</li>
-        <li>Shift+Click a number to commit a number</li>
-    </ul>
-    <div id="puzzle-container"></div>
+    <div id="main-container">
+        <div id="instructions-and-score-container">
+            <h3>Instructions</h3>
+            <ul>
+                <li>Click a number to create a pencil mark</li>
+                <li>Shift+Click a number to commit a number</li>
+            </ul>
+
+            <div id="stopwatch-container">
+                <h3>Timer</h3>
+
+                <label id="minutes">00</label>
+                <label id="colon">:</label>
+                <label id="seconds">00</label>
+            </div>
+
+            <h3>Score and Strikes</h3>
+            <p id="strikes">You have no strikes.</p>
+        </div>
+
+        <div id="puzzle-container"></div>
+    </div>
+
 </body>
 </html>
