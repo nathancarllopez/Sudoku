@@ -314,7 +314,6 @@ function cellClick(event) {
         });
 
         /** Add highlighting to all other cells with the same value */
-        console.log(sameValueCells);
         sameValueCells.forEach(cell => cell.setAttribute('style', 'background-color: lightblue'));
     }
 }
