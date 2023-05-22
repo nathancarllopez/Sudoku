@@ -110,6 +110,8 @@ const ALL_BLOCKS = [
  * @param {*} puzzle 
  */
 function displayPuzzle(puzzle) {
+    const solvedPuzzle = solvePuzzle(puzzle);
+
     for (let blockNum = 0; blockNum < 9; blockNum++) {
         /** Create 9 blocks */
         const block = document.createElement('div');
@@ -147,7 +149,7 @@ function displayPuzzle(puzzle) {
                     subCell.addEventListener('mouseleave', subCellDefault);
 
                     /** Add click effect */
-                    subCell.addEventListener('click', clickSubCell);
+                    subCell.addEventListener('click', event => clickSubCellWhichType(event, solvedPuzzle));
 
                     /** Add each sub-cell to its cell */
                     cell.appendChild(subCell);
@@ -167,6 +169,8 @@ function displayPuzzle(puzzle) {
         /** Add each block to puzzle */
         PUZZLE_CONTAINER.appendChild(block);
     }
+
+    console.log("The solution", solvedPuzzle);
 }
 
 /**
@@ -214,14 +218,14 @@ function subCellDefault(event) {
  * 
  * @param {*} event 
  */
-function clickSubCell(event) {
+function clickSubCellWhichType(event, solvedPuzzle) {
     /** Target subcell */
     const subCell = event.target;
 
     /** Check if shift is pressed */
     const shiftPressed = event.shiftKey;
     if (shiftPressed) {
-        subCellShiftClick(subCell);
+        subCellShiftClick(subCell, solvedPuzzle);
     } else {
         subCellClick(subCell);
     }
@@ -234,7 +238,7 @@ function clickSubCell(event) {
  * 
  * @param {*} subCell 
  */
-function subCellClick(subCell) {
+function subCellClick(subCell) { 
     /** Retrieve subcell id and subcell value */
     const subCellId = subCell.getAttribute('id');
     const subCellValue = subCell.textContent;
@@ -249,6 +253,7 @@ function subCellClick(subCell) {
         filledToDefault(subCell, subCellValue, parentCell);
     }
 }
+//#region
 
 /**
  * Subfunction of subCellClick
@@ -287,31 +292,42 @@ function filledToDefault(subCell, subCellValue, parentCell) {
     subCell.addEventListener('mouseenter', subCellFill);
     subCell.addEventListener('mouseleave', subCellDefault);
 }
+//#endregion
 
 /**
  * When a subcell is shift+clicked, 
  * 
  * @param {*} subCell 
  */
-function subCellShiftClick(subCell) {
-    /** Compare with solved puzzle */
-
-
+function subCellShiftClick(subCell, solvedPuzzle) {
     /** Target parent cell of subcell and retrieve subcell value */
     const parentCell = subCell.parentNode;
+    const parentCellClassList = parentCell.classList;
+    const parentCellRowString = parentCellClassList[0];
+    const parentCellRowNum = parentCellRowString.slice(-1);
+    const parentCellColString = parentCellClassList[1];
+    const parentCellColNum =  parentCellColString.slice(-1);
     const subCellValue = subCell.textContent;
 
-    /** Remove all other subcells of parent subcell */
-    parentCell.childNodes.forEach(child => parentCell.removeChild(child));
+    /** Compare with solved puzzle */
+    const solutionCellValue = solvedPuzzle[parentCellRowNum][parentCellColNum];
+    console.log("solution", solutionCellValue);
+    console.log("guess", subCellValue);
+    if (subCellValue == solutionCellValue) {
+        /** Remove all other subcells of parent subcell */
+        parentCell.childNodes.forEach(child => parentCell.removeChild(child));
 
-    /** Change attributes of cell, its content, and add a click event */
-    parentCell.setAttribute('id', 'filled-cell');
-    parentCell.classList.add(`value-${subCellValue}`);
-    parentCell.textContent = subCellValue;
-    parentCell.addEventListener('click', cellClick);
+        /** Change attributes of cell, its content, and add a click event */
+        parentCell.setAttribute('id', 'filled-cell');
+        parentCell.classList.add(`value-${subCellValue}`);
+        parentCell.textContent = subCellValue;
+        parentCell.addEventListener('click', cellClick);
 
-    /** Remove pencil marks from adjacent cells */
-    removeOutdatedPencilMarks(parentCell, subCellValue);
+        /** Remove pencil marks from adjacent cells */
+        removeOutdatedPencilMarks(parentCell, subCellValue);
+    } else {
+        console.log('wrong answer');
+    }
 }
 
 function removeOutdatedPencilMarks(inputCell, inputValue) {
@@ -324,7 +340,7 @@ function removeOutdatedPencilMarks(inputCell, inputValue) {
     const inputCellBlock = inputCellClassList[2];
 
     /** Iterate over the blocks */
-    puzzleContainer.childNodes.forEach(block => {
+    PUZZLE_CONTAINER.childNodes.forEach(block => {
         /** Retrieve the empty cells of this block */
         const emptyCells = [];
         block.childNodes.forEach(cell => {
