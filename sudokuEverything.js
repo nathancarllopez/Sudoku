@@ -33,6 +33,12 @@ const INSTRUCTIONS_AND_SCORE_CONTAINER = document.querySelector('#instructions-a
 /** The p that displays the score */
 const SCORE_STRING = document.querySelector('#strikes');
 
+/** The p that displays a message at game over */
+const GAME_OVER_MESSAGE = document.querySelector('#game-over-message');
+
+/** The empty cells */
+let EMPTY_CELLS;
+
 /** The number of wrong answers entered */
 let STRIKES = 0;
 
@@ -188,12 +194,13 @@ function displayPuzzle(puzzle) {
     PUZZLE_CONTAINER.setAttribute('style', 'border-right-width: 5px');
     manageStopwatch();
 
+    EMPTY_CELLS = document.querySelectorAll('#cell');
+
     console.log("The solution", solvedPuzzle);
 }
 
 function manageStopwatch() {
     if (GAME_OVER) {
-        console.log("game over")
         clearInterval(STOPWATCH_ID);
     } else {
         let minutesLabel = document.getElementById("minutes");
@@ -287,14 +294,12 @@ function punishWrongAnswer() {
     if (!GAME_OVER) {
         STRIKES++;
         if (STRIKES == 1) {
-            SCORE_STRING.textContent = `You have ${STRIKES} strike.`
+            SCORE_STRING.textContent = `You have ${STRIKES} strike.`;
         } else if (STRIKES == 2) {
-            SCORE_STRING.textContent = `You have ${STRIKES} strikes.`
+            SCORE_STRING.textContent = `You have ${STRIKES} strikes.`;
         } else {
-            SCORE_STRING.textContent = `You have ${STRIKES} strikes.`
-            const gameOverMessage = document.createElement('p');
-            gameOverMessage.textContent = "game over";
-            INSTRUCTIONS_AND_SCORE_CONTAINER.appendChild(gameOverMessage);
+            SCORE_STRING.textContent = `You have ${STRIKES} strikes.`;
+            GAME_OVER_MESSAGE.textContent = "game over";
             GAME_OVER = true;
             manageStopwatch();
         }
@@ -393,6 +398,17 @@ function subCellShiftClick(subCell, solvedPuzzle) {
 
         /** Remove pencil marks from adjacent cells */
         removeOutdatedPencilMarks(parentCell, subCellValue);
+
+        /** Recalculate the empty cells */
+        EMPTY_CELLS = document.querySelectorAll('#cell');
+
+        /** If there are no empty cells */
+        if (!EMPTY_CELLS.length) {
+            GAME_OVER_MESSAGE.textContent = 'You win!'
+            GAME_OVER = true;
+            manageStopwatch();
+        }
+
     } else {
         punishWrongAnswer();
     }
