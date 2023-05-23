@@ -234,7 +234,7 @@ function displayPuzzle(puzzle) {
 
     EMPTY_CELLS = document.querySelectorAll('#cell');
 
-    // console.log("The solution", solvedPuzzle);
+    console.log("The solution", solvedPuzzle);
 }
 
 function manageStopwatch() {
@@ -423,15 +423,29 @@ function subCellShiftClick(subCell, solvedPuzzle) {
 
     /** Compare with solved puzzle */
     const solutionCellValue = solvedPuzzle[parentCellRowNum][parentCellColNum];
-    // console.log("solution", solutionCellValue);
-    // console.log("guess", subCellValue);
     if (subCellValue == solutionCellValue) {
+        /** Collect all classes that don't pertain to a value */
+        const goodClassNames = [];
+        parentCellClassList.forEach(className => {
+            if (!className.includes('value-')) {
+                goodClassNames.push(className);
+            }
+        });
+        
+        /** Empty the class list */
+        while (parentCellClassList.length > 0) {
+            parentCellClassList.remove(parentCellClassList[0]);
+        }
+
+        /** Add the good classes back in */
+        goodClassNames.forEach(className => parentCellClassList.add(className));
+
         /** Remove all other subcells of parent subcell */
         parentCell.childNodes.forEach(child => parentCell.removeChild(child));
 
         /** Change attributes of cell, its content, and add a click event */
         parentCell.setAttribute('id', 'filled-cell');
-        parentCell.classList.add(`value-${subCellValue}`);
+        parentCellClassList.add(`value-${subCellValue}`);
         parentCell.textContent = subCellValue;
         parentCell.addEventListener('click', cellClick);
 
@@ -1168,7 +1182,7 @@ function randomRemove(inputPuzzle) {
 
         removedCells.push(randomFilledCell);
     }
-    
+
     return puzzle;
 }
 
