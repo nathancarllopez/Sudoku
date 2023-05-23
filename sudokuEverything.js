@@ -132,32 +132,45 @@ const ALL_BLOCKS = [
 START_BUTTON.addEventListener('click', startGame);
 
 /**
- * 
+ * Main function:
+ * Starts a game by checking on the difficulty radio buttons,
+ * and then calling buildAPuzzle and displayPuzzle
  * 
  */
-function startGame(event) {
+function startGame() {
+    /** See what difficulty was selected */
     const difficultyRadioButtons = document.querySelectorAll('input[name="difficulty"]');
     let selectedDifficulty;
     for (const radioButton of difficultyRadioButtons) {
-        console.log(radioButton);
         if (radioButton.checked) {
             selectedDifficulty = radioButton.value;
             break;
         }
     }
-    console.log(selectedDifficulty);
+
+    /** Builds a puzzle based on the selected difficulty */
+    const puzzle = buildAPuzzle(selectedDifficulty);
+
+    /** Display the puzzle */
+    displayPuzzle(puzzle);
 }
 
 /**
- * Creates and displays the puzzle as
- * a nested grid of divs. Manages event listeners to 
- * cells and subcells
+ * Creates and displays the puzzle as a nested grid of divs.
+ * Manages event listeners for cells and subcells
  * 
  * @param {*} puzzle 
  */
 function displayPuzzle(puzzle) {
+    /** Clear out the old puzzle */
+    while (PUZZLE_CONTAINER.firstChild) {
+        PUZZLE_CONTAINER.removeChild(PUZZLE_CONTAINER.firstChild);
+    }
+
+    /** Solve the puzzle to pass as a parameter to the event listeners */
     const solvedPuzzle = solvePuzzle(puzzle);
 
+    /** Create the new puzzle */
     for (let blockNum = 0; blockNum < 9; blockNum++) {
         /** Create 9 blocks */
         const block = document.createElement('div');
@@ -221,7 +234,7 @@ function displayPuzzle(puzzle) {
 
     EMPTY_CELLS = document.querySelectorAll('#cell');
 
-    console.log("The solution", solvedPuzzle);
+    // console.log("The solution", solvedPuzzle);
 }
 
 function manageStopwatch() {
@@ -1095,9 +1108,14 @@ function buildAPuzzle(difficulty) {
         puzzle[randomCell[0]][randomCell[1]] = randomValue;
         let updatedOptions = updateOptions(randomCell[0], randomCell[1], randomValue, options);
 
-        /** If the puzzle has a unique solution, return it */
+        /** If the puzzle has a unique solution */
         if (countSolutions(puzzle) == 1) {
-            console.log(`This puzzle took ${iterations} iterations to build.`);
+            /** If the difficulty is set to hard, run randomRemove */
+            if (difficulty == 'hard') {
+                console.log('easy puzzle', puzzle);
+                puzzle = randomRemove(puzzle);
+            }
+
             return puzzle;
         }
 
@@ -1107,7 +1125,7 @@ function buildAPuzzle(difficulty) {
             emptyCells.push(randomCell);
         }
 
-        /** Otherwise, the puzzle has at least two solutions */
+        /** Otherwise, the puzzle has multiple solutions */
         else {
             /** Reassign options to updatedOptions */
             options = updatedOptions;
@@ -1116,6 +1134,42 @@ function buildAPuzzle(difficulty) {
         /** Count the iterations */
         iterations++;
     }
+}
+
+function randomRemove(inputPuzzle) {
+    /** Create a copy of the puzzle */
+    let puzzle = JSON.parse(JSON.stringify(inputPuzzle));
+
+    /** Get the filled cells */
+    const allCells = ALL_BLOCKS.flat();
+    const allFilledCells = allCells.filter(cell => puzzle[cell[0]][cell[1]]);
+
+    
+    let workingFilledCells = JSON.parse(JSON.stringify(allFilledCells));
+
+    /** Randomly check each filled cell to see if it can be removed */
+    const removedCells = [];
+    while (workingFilledCells.length > 0) {
+        /** Select a random filled cell and remove it from filledCells */
+        let randomIndex = Math.floor(Math.random() * workingFilledCells.length);
+        const randomFilledCell = workingFilledCells.splice(randomIndex, 1)[0];
+
+        /** Record the cells value */
+        const randomFilledCellValue = puzzle[randomFilledCell[0]][randomFilledCell[1]];
+
+        /** Remove the value from the puzzle */
+        puzzle[randomFilledCell[0]][randomFilledCell[1]] = 0;
+
+        /** If the puzzle does not have a unique solution */
+        if (countSolutions(puzzle) !== 1) {
+            /** Add the value back to the cell */
+            puzzle[randomFilledCell[0]][randomFilledCell[1]] = randomFilledCellValue;
+        }
+
+        removedCells.push(randomFilledCell);
+    }
+    
+    return puzzle;
 }
 
 // function buildAPuzzle() {
